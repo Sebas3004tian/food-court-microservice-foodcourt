@@ -5,7 +5,10 @@ public enum ExceptionResponse {
     VALIDATION_ERROR("Validation error"),
     ACCESS_DENIED("You do not have permission to access this resource"),
     SECURITY_CONFIGURATION_ERROR("Error configuring security"),
-    USER_ROLE_EROR("Error with the user");
+    USER_ROLE_EROR("Error with the user"),
+    RESTAURANT_ALREADY_EXISTS("Restaurant already exists"),
+
+    USER_MICROSERVICE_ERROR("Error with user or user role");
 
     private final String message;
 

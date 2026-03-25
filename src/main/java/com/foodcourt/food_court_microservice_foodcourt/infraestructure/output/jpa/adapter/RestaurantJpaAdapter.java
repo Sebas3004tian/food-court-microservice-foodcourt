@@ -7,6 +7,8 @@ import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jp
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IRestaurantRepository;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
 
@@ -18,5 +20,17 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
     public Restaurant createRestaurant(Restaurant restaurant) {
         RestaurantEntity restaurantEntity = restaurantRepository.save(restaurantEntityMapper.toEntity(restaurant));
         return restaurantEntityMapper.toRestaurant(restaurantEntity);
+    }
+
+    @Override
+    public Optional<Restaurant> findOneByNit(Long nit) {
+        return restaurantRepository.findOneByNit(nit)
+                .map(restaurantEntityMapper::toRestaurant);
+    }
+
+    @Override
+    public Optional<Restaurant> findOneByPhoneNumber(String phoneNumberRestaurant) {
+        return restaurantRepository.findOneByPhoneNumberRestaurant(phoneNumberRestaurant)
+                .map(restaurantEntityMapper::toRestaurant);
     }
 }

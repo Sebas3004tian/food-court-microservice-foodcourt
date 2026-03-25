@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantAlreadyExistsException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.UserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
@@ -19,6 +20,14 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
 
     @Override
     public void createRestaurant(Restaurant restaurant){
+
+        if (restaurantPersistencePort.findOneByNit(restaurant.getNit()).isPresent()) {
+            throw new RestaurantAlreadyExistsException("Restaurant NIT already exists");
+        }
+
+        if (restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()) {
+            throw new RestaurantAlreadyExistsException("Restaurant phone number already exists");
+        }
 
         boolean isOwner = userExternalPort.isUserOwner(restaurant.getOwnerId());
 
