@@ -30,6 +30,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     implementation 'org.mapstruct:mapstruct:1.5.5.Final'
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
 
 	compileOnly 'org.projectlombok:lombok'
 
@@ -48,6 +49,13 @@ dependencies {
 
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:2023.0.3"
+    }
+}
+
 
 tasks.named('test') {
 	useJUnitPlatform()

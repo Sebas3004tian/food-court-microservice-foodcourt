@@ -1,5 +1,6 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.UserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.SecurityConfigurationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -49,6 +50,16 @@ public class ControllerAdvisor {
     public ResponseEntity<Map<String, String>> handleSecurityConfigurationException(SecurityConfigurationException ex) {
         Map<String, String> response = Map.of(
                 ERROR, ExceptionResponse.SECURITY_CONFIGURATION_ERROR.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(UserRoleException.class)
+    public ResponseEntity<Map<String, String>> handleUserRoleException(UserRoleException ex) {
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.USER_ROLE_EROR.getMessage(),
                 MESSAGE, ex.getMessage()
         );
 
