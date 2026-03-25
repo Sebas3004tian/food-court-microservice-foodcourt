@@ -23,7 +23,7 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
         boolean isOwner = userExternalPort.isUserOwner(restaurant.getOwnerId());
 
         if (!isOwner) {
-            throw new UserRoleException("The user does not exist or does not have the role of OWNER");
+            throw new UserRoleException("The user does not exist or does not have the role of PROPIETARIO");
         }
 
         restaurantPersistencePort.createRestaurant(restaurant);
