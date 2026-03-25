@@ -6,8 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDate;
-
 @Entity
 @Table(name = "restaurants")
 @NoArgsConstructor
@@ -29,9 +27,9 @@ public class RestaurantEntity {
     @Column(name = "phone_number_restaurant", nullable = false, unique = true)
     private String phoneNumberRestaurant;
 
-    @Column(name = "url_logo", nullable = false, unique = true)
+    @Column(name = "url_logo", nullable = false, columnDefinition = "TEXT")
     private String urlLogo;
 
-    @Column(name = "owner_id",unique = true, nullable = false)
+    @Column(name = "owner_id", nullable = false)
     private Long ownerId;
 }

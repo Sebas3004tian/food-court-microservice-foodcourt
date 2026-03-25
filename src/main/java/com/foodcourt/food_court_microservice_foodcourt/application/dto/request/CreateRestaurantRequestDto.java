@@ -27,6 +27,6 @@ public class CreateRestaurantRequestDto {
 
     @NotNull(message="The ower id cannot be empty")
     @Positive(message="The ower id cannot be empty be negative")
-    private Long owerId;
+    private Long ownerId;
 
 }
