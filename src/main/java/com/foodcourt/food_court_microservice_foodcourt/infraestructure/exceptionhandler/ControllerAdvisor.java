@@ -1,7 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantAlreadyExistsException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.UserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.SecurityConfigurationException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UserServiceException;
 import org.springframework.http.HttpStatus;
@@ -58,8 +58,8 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
-    @ExceptionHandler(UserRoleException.class)
-    public ResponseEntity<Map<String, String>> handleUserRoleException(UserRoleException ex) {
+    @ExceptionHandler(InvalidUserRoleException.class)
+    public ResponseEntity<Map<String, String>> handleUserRoleException(InvalidUserRoleException ex) {
         Map<String, String> response = Map.of(
                 ERROR, ExceptionResponse.USER_ROLE_EROR.getMessage(),
                 MESSAGE, ex.getMessage()
