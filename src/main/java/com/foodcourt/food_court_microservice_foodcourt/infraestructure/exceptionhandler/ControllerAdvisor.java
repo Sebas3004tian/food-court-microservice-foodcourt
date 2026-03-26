@@ -1,9 +1,11 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.SecurityConfigurationException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UserServiceException;
+import org.springframework.boot.context.config.ConfigDataNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -61,18 +63,7 @@ public class ControllerAdvisor {
     @ExceptionHandler(InvalidUserRoleException.class)
     public ResponseEntity<Map<String, String>> handleUserRoleException(InvalidUserRoleException ex) {
         Map<String, String> response = Map.of(
-                ERROR, ExceptionResponse.USER_ROLE_EROR.getMessage(),
-                MESSAGE, ex.getMessage()
-        );
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-    }
-
-    @ExceptionHandler(RestaurantAlreadyExistsException.class)
-    public ResponseEntity<Map<String, String>> handleRestaurantAlreadyExistsException(RestaurantAlreadyExistsException ex) {
-
-        Map<String, String> response = Map.of(
-                ERROR, ExceptionResponse.RESTAURANT_ALREADY_EXISTS.getMessage(),
+                ERROR, ExceptionResponse.USER_ROLE_ERROR.getMessage(),
                 MESSAGE, ex.getMessage()
         );
 
@@ -90,33 +81,11 @@ public class ControllerAdvisor {
         return ResponseEntity.status(ex.getStatus()).body(response);
     }
 
-    @ExceptionHandler(RestaurantNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleRestaurantNotFoundException(RestaurantNotFoundException ex) {
+    @ExceptionHandler(ConfigDataNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleConfigDataNotFoundException(ConfigDataNotFoundException ex) {
 
         Map<String, String> response = Map.of(
-                ERROR, ExceptionResponse.RESTAURANT_NOT_FOUND.getMessage(),
-                MESSAGE, ex.getMessage()
-        );
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-    }
-
-    @ExceptionHandler(CategoryNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleCategoryNotFoundException(CategoryNotFoundException ex) {
-
-        Map<String, String> response = Map.of(
-                ERROR, ExceptionResponse.CATEGORY_NOT_FOUND.getMessage(),
-                MESSAGE, ex.getMessage()
-        );
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-    }
-
-    @ExceptionHandler(DishNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleDishNotFoundException(DishNotFoundException ex) {
-
-        Map<String, String> response = Map.of(
-                ERROR, ExceptionResponse.DISH_NOT_FOUND.getMessage(),
+                ERROR, ExceptionResponse.DATA_NOT_FOUND.getMessage(),
                 MESSAGE, ex.getMessage()
         );
 
@@ -134,11 +103,11 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    @ExceptionHandler(DishAlreadyExistsException.class)
-    public ResponseEntity<Map<String, String>> handleDishAlreadyExistsException(DishAlreadyExistsException ex) {
+    @ExceptionHandler(AlreadyExistException.class)
+    public ResponseEntity<Map<String, String>> handleAlreadyExistException(AlreadyExistException ex) {
 
         Map<String, String> response = Map.of(
-                ERROR, ExceptionResponse.DISH_ALREADY_EXISTS.getMessage(),
+                ERROR, ExceptionResponse.ALREADY_EXISTS.getMessage(),
                 MESSAGE, ex.getMessage()
         );
 
