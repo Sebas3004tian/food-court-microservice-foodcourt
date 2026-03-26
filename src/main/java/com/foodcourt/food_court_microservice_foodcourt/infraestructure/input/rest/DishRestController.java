@@ -31,5 +31,12 @@ public class DishRestController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PatchMapping("/{dishId}/active")
+    public ResponseEntity<Void> enableOrDisableDish(@PathVariable Long dishId, @RequestParam boolean active) {
+        dishHandler.enableOrDisableDish(dishId, active);
+        return ResponseEntity.ok().build();
+    }
+
 
 }

@@ -1,10 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.CategoryNotFoundException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishAlreadyExistsException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Category;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
@@ -43,6 +40,33 @@ public class DishUseCase implements IDishServicePort {
 
         dish.setPrice(dishPrice);
         dish.setDescription(dishDescription);
+
+        dishPersistencePort.updateDish(dish);
+    }
+
+    @Override
+    public void enableOrDisableDish(Long dishId, boolean active) {
+
+        Dish dish = dishPersistencePort.findOneById(dishId)
+                .orElseThrow(() -> new DishNotFoundException("Not found the Dish with id "+dishId));
+
+        Long restaurantId = dish.getRestaurant().getId();
+        Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException("Not found the Restaurant with id "+restaurantId));
+
+        Long userId = jwtServicePort.getAuthenticatedUserId();
+
+        if (!restaurant.getOwnerId().equals(userId)) {
+            throw new UnauthorizedException("You are not the owner of this restaurant");
+        }
+
+        if (dish.isActive() == active) {
+            throw new DishStatusAlreadySetException(
+                    "Dish is already " + (active ? "enabled" : "disabled")
+            );
+        }
+
+        dish.setActive(active);
 
         dishPersistencePort.updateDish(dish);
     }

@@ -145,4 +145,15 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(DishStatusAlreadySetException.class)
+    public ResponseEntity<Map<String, String>> handleDishStatusAlreadySetException(DishStatusAlreadySetException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.DISH_STATUS_ALREADY_SET.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
 }
