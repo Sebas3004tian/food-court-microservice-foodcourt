@@ -2,11 +2,17 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.j
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.RestaurantEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IRestaurantEntityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IRestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -39,4 +45,21 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
         return restaurantRepository.findOneByPhoneNumberRestaurant(phoneNumberRestaurant)
                 .map(restaurantEntityMapper::toRestaurant);
     }
+
+    @Override
+    public List<Restaurant> findAllPaged(int page, int size) {
+
+        Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
+
+        Page<RestaurantEntity> pageResult = restaurantRepository.findAll(pageable);
+
+        if (pageResult.isEmpty()) {
+            throw new NoDataFoundException("The restaurant list is empty");
+        }
+
+        List<RestaurantEntity> restaurantEntityList = pageResult.getContent();
+
+        return restaurantEntityMapper.toRestaurantList(restaurantEntityList);
+    }
+
 }
