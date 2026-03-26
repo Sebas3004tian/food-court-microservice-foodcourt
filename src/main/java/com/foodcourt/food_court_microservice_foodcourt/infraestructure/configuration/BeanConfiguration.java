@@ -1,21 +1,17 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.configuration;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
+import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.UserFeignAdapter;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.IUserFeignClient;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter.CategoryJpaAdapter;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter.DishJpaAdapter;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter.RestaurantJpaAdapter;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.ICategoryEntityMapper;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IDishEntityMapper;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IRestaurantEntityMapper;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.ICategoryRepository;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IDishRepository;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IRestaurantRepository;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter.*;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.*;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.security.adapter.JwtServiceAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -28,10 +24,14 @@ public class BeanConfiguration {
     private final IRestaurantRepository restaurantRepository;
     private final IDishRepository dishRepository;
     private final ICategoryRepository categoryRepository;
+    private final IOrderRepository orderRepository;
+    private final IOrderDishRepository orderDishRepository;
 
     private final IRestaurantEntityMapper restaurantEntityMapper;
     private final IDishEntityMapper dishEntityMapper;
     private final ICategoryEntityMapper categoryEntityMapper;
+    private final IOrderEntityMapper orderEntityMapper;
+    private final IOrderDishEntityMapper orderDishEntityMapper;
 
     private final IUserFeignClient userFeignClient;
 
@@ -48,6 +48,16 @@ public class BeanConfiguration {
     @Bean
     public ICategoryPersistencePort categoryPersistencePort(){
         return new CategoryJpaAdapter(categoryRepository,categoryEntityMapper);
+    }
+
+    @Bean
+    public IOrderPersistencePort orderPersistencePort(){
+        return new OrderJpaAdapter(orderRepository,orderEntityMapper);
+    }
+
+    @Bean
+    public IOrderDishPersistencePort orderDishPersistencePort(){
+        return new OrderDishJpaAdapter(orderDishRepository,orderDishEntityMapper);
     }
 
     @Bean
@@ -74,6 +84,17 @@ public class BeanConfiguration {
                 dishPersistencePort(),
                 restaurantPersistencePort(),
                 categoryPersistencePort(),
+                jwtServicePort()
+        );
+    }
+
+    @Bean
+    public IOrderServicePort orderServicePort(){
+        return new OrderUseCase(
+                orderPersistencePort(),
+                orderDishPersistencePort(),
+                dishPersistencePort(),
+                restaurantPersistencePort(),
                 jwtServicePort()
         );
     }
