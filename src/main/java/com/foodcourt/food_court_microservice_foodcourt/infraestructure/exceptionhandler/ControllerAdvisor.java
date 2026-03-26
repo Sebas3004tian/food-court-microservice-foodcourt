@@ -1,11 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.SecurityConfigurationException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UserServiceException;
-import org.springframework.boot.context.config.ConfigDataNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
@@ -81,8 +77,8 @@ public class ControllerAdvisor {
         return ResponseEntity.status(ex.getStatus()).body(response);
     }
 
-    @ExceptionHandler(ConfigDataNotFoundException.class)
-    public ResponseEntity<Map<String, String>> handleConfigDataNotFoundException(ConfigDataNotFoundException ex) {
+    @ExceptionHandler(NoDataFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoDataFoundException(NoDataFoundException ex) {
 
         Map<String, String> response = Map.of(
                 ERROR, ExceptionResponse.DATA_NOT_FOUND.getMessage(),
