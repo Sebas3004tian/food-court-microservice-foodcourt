@@ -18,7 +18,7 @@ public class RestaurantEntity {
     @Id
     private Long id;
 
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false)
     private String name;
 
     @Column(unique = true, nullable = false)

@@ -7,6 +7,8 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
 
+import java.util.List;
+
 public class RestaurantUseCase  implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
@@ -36,5 +38,15 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
         }
 
         restaurantPersistencePort.createRestaurant(restaurant);
+    }
+
+    @Override
+    public List<Restaurant> getAllPagedRestaurants(int page, int size) {
+
+        if (page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid pagination params");
+        }
+
+        return restaurantPersistencePort.findAllPaged(page, size);
     }
 }

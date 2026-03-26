@@ -13,7 +13,8 @@ public enum ExceptionResponse {
     UNAUTHORIZED_ERROR("You are not autorized to do this action"),
     USER_MICROSERVICE_ERROR("Error with user or user role"),
     DISH_ALREADY_EXISTS("Dish already exists"),
-    DISH_STATUS_ALREADY_SET("Dish status already set");
+    DISH_STATUS_ALREADY_SET("Dish status already set"),
+    DATA_NOT_FOUND("Data not found");
 
     private final String message;
 

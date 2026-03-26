@@ -2,6 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt.domain.spi;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface IRestaurantPersistencePort {
@@ -9,4 +10,5 @@ public interface IRestaurantPersistencePort {
     Restaurant createRestaurant(Restaurant restaurant);
     Optional<Restaurant> findOneByNit(Long nit);
     Optional<Restaurant> findOneByPhoneNumber(String phoneNumber);
+    List<Restaurant> findAllPaged(int page, int size);
 }
