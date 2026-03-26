@@ -1,6 +1,5 @@
 package com.foodcourt.food_court_microservice_foodcourt.application.dto.response;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -3,11 +3,9 @@ package com.foodcourt.food_court_microservice_foodcourt.application.handler.impl
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.DishResponseDto;
-import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.RestaurantResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IDishHandler;
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IDishRequestMapper;
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IDishResponseMapper;
-import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IRestaurantResponseMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import lombok.RequiredArgsConstructor;

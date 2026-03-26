@@ -3,7 +3,6 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.re
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.DishResponseDto;
-import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.RestaurantResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IDishHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
