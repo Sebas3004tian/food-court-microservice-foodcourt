@@ -1,8 +1,8 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantAlreadyExistsException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.SecurityConfigurationException;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UserServiceException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -88,6 +88,50 @@ public class ControllerAdvisor {
         );
 
         return ResponseEntity.status(ex.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(RestaurantNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleRestaurantNotFoundException(RestaurantNotFoundException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.RESTAURANT_NOT_FOUND.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCategoryNotFoundException(CategoryNotFoundException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.CATEGORY_NOT_FOUND.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<Map<String, String>> handleUnauthorizedException(UnauthorizedException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.UNAUTHORIZED_ERROR.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    }
+
+    @ExceptionHandler(DishAlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleDishAlreadyExistsException(DishAlreadyExistsException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.DISH_ALREADY_EXISTS.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
 }

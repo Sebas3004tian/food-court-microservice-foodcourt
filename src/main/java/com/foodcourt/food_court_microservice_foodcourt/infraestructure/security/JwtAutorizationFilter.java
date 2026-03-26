@@ -1,4 +1,4 @@
-package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.security;
+package com.foodcourt.food_court_microservice_foodcourt.infraestructure.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
