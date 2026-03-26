@@ -1,5 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.rest;
 
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateDishRequestDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.handler.IDishHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,8 +21,8 @@ public class DishRestController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
     @PostMapping("/")
-    public ResponseEntity<Void> createOwner(@Valid @RequestBody CreateOwnerRequestDto ownerRequestDto){
-        userHandler.createOwner(ownerRequestDto);
+    public ResponseEntity<Void> createDish(@Valid @RequestBody CreateDishRequestDto createDishRequestDto){
+        dishHandler.createDish(createDishRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 

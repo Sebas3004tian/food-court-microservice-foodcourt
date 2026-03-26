@@ -1,7 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.configuration;
 
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.SecurityConfigurationException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.security.JwtAutorizationFilter;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.security.JwtAutorizationFilter;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
