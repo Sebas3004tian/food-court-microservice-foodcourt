@@ -3,32 +3,64 @@ package com.foodcourt.food_court_microservice_foodcourt;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Category;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.ICategoryPersistencePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.*;
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CreateDishUseCaseTest {
 
+    @Mock
+    private IDishPersistencePort dishPersistencePort;
+
+    @Mock
+    private IRestaurantPersistencePort restaurantPersistencePort;
+
+    @Mock
+    private IJwtServicePort jwtServicePort;
+
+    @Mock
+    private ICategoryPersistencePort categoryPersistencePort;
+
+    @InjectMocks
+    private DishUseCase dishUseCase;
 
     @Test
-    void shouldCreateDishWithAllArgsConstructor() {
+    void shouldCreateDishSuccessfully() {
+
+        Long ownerId = 10L;
+        Long restaurantId = 1L;
+
         Category category = new Category(1L, "POSTRES");
+
         Restaurant restaurant = new Restaurant(
-                1L,
+                restaurantId,
                 "Restaurante Test",
                 123456L,
                 "Calle 123",
                 "123456789",
                 "logo.png",
-                10L
+                ownerId
         );
 
         Dish dish = new Dish(
-                1L,
+                null,
                 "Helado",
+                new BigDecimal("1000"),
                 "Helado de vainilla",
                 "url.com/img",
                 true,
@@ -36,39 +68,83 @@ class CreateDishUseCaseTest {
                 category
         );
 
-        assertEquals(1L, dish.getId());
-        assertEquals("Helado", dish.getName());
-        assertEquals("Helado de vainilla", dish.getDescription());
-        assertEquals("url.com/img", dish.getUrlImage());
-        assertTrue(dish.isActive());
-        assertEquals(restaurant, dish.getRestaurant());
-        assertEquals(category, dish.getCategory());
+        when(jwtServicePort.getAuthenticatedUserId())
+                .thenReturn(ownerId);
+
+        when(restaurantPersistencePort.findOneById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        when(categoryPersistencePort.findOneById(1L))
+                .thenReturn(Optional.of(category));
+
+        dishUseCase.createDish(dish);
+
+        verify(dishPersistencePort).createDish(dish);
     }
 
     @Test
-    void shouldSetAndGetValuesCorrectly() {
+    void shouldThrowExceptionWhenUserIsNotOwner() {
+
+        Long ownerId = 10L;
+        Long otherUserId = 99L;
+        Long restaurantId = 1L;
+
+        Restaurant restaurant = new Restaurant(
+                restaurantId,
+                "Restaurante Test",
+                123456L,
+                "Calle 123",
+                "123456789",
+                "logo.png",
+                ownerId
+        );
+
+        Category category = new Category(1L, "POSTRES");
+
         Dish dish = new Dish();
+        dish.setRestaurant(restaurant);
+        dish.setCategory(category);
 
-        dish.setId(2L);
-        dish.setName("Pizza");
-        dish.setDescription("Pizza grande");
-        dish.setUrlImage("img.png");
-        dish.setActive(false);
+        when(jwtServicePort.getAuthenticatedUserId())
+                .thenReturn(otherUserId);
 
-        assertEquals(2L, dish.getId());
-        assertEquals("Pizza", dish.getName());
-        assertEquals("Pizza grande", dish.getDescription());
-        assertEquals("img.png", dish.getUrlImage());
-        assertFalse(dish.isActive());
+        when(restaurantPersistencePort.findOneById(restaurantId))
+                .thenReturn(Optional.of(restaurant));
+
+        when(categoryPersistencePort.findOneById(1L))
+                .thenReturn(Optional.of(category));
+
+        assertThrows(UnauthorizedException.class, () ->
+                dishUseCase.createDish(dish)
+        );
+
+        verify(dishPersistencePort, never()).createDish(any());
     }
 
     @Test
-    void shouldActivateDish() {
+    void shouldThrowExceptionWhenRestaurantNotFound() {
+        Long restaurantId = 1L;
+
+        Category category = new Category(1L, "POSTRES");
+
+        Restaurant restaurant = new Restaurant();
+        restaurant.setId(restaurantId);
+
         Dish dish = new Dish();
-        dish.setActive(false);
+        dish.setRestaurant(restaurant);
+        dish.setCategory(category);
 
-        dish.activate();
+        when(categoryPersistencePort.findOneById(1L))
+                .thenReturn(Optional.of(category));
 
-        assertTrue(dish.isActive());
+        when(restaurantPersistencePort.findOneById(restaurantId))
+                .thenReturn(Optional.empty());
+
+        assertThrows(RuntimeException.class, () ->
+                dishUseCase.createDish(dish)
+        );
+
+        verify(dishPersistencePort, never()).createDish(any());
     }
+
 }

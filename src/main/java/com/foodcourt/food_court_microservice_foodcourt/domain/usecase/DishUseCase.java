@@ -3,6 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.CategoryNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishAlreadyExistsException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Category;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
@@ -12,6 +13,8 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersisten
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
+
+import java.math.BigDecimal;
 
 public class DishUseCase implements IDishServicePort {
 
@@ -28,16 +31,33 @@ public class DishUseCase implements IDishServicePort {
     }
 
     @Override
+    public void updateDish(Long dishId, BigDecimal dishPrice, String dishDescription){
+        Dish dish = dishPersistencePort.findOneById(dishId)
+                .orElseThrow(() -> new DishNotFoundException("Not found the Dish with id "+dishId));
+
+        Long userId = jwtServicePort.getAuthenticatedUserId();
+
+        if (!dish.getRestaurant().getOwnerId().equals(userId)) {
+            throw new UnauthorizedException("You are not the owner of this restaurant");
+        }
+
+        dish.setPrice(dishPrice);
+        dish.setDescription(dishDescription);
+
+        dishPersistencePort.updateDish(dish);
+    }
+
+    @Override
     public void createDish(Dish dish) {
 
         Long categoryId = dish.getCategory().getId();
         Category category = categoryPersistencePort.findOneById(categoryId)
-                .orElseThrow(() -> new CategoryNotFoundException("Category with id "+categoryId+" not found"));
+                .orElseThrow(() -> new CategoryNotFoundException("Not found the Category with id "+categoryId));
         dish.setCategory(category);
 
         Long restaurantId = dish.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
-                .orElseThrow(() -> new RestaurantNotFoundException("Restaurant with id "+restaurantId+" not found"));
+                .orElseThrow(() -> new RestaurantNotFoundException("Not found the Restaurant with id "+restaurantId));
         dish.setRestaurant(restaurant);
 
         Long userId = jwtServicePort.getAuthenticatedUserId();

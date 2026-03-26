@@ -4,6 +4,8 @@ import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 public class CreateDishRequestDto {
@@ -11,9 +13,9 @@ public class CreateDishRequestDto {
     @NotBlank(message="The name cannot be empty")
     private String name;
 
-    @NotNull(message="The price cannot be empty")
-    @Positive(message="The price cannot be negative")
-    private Double price;
+    @NotNull(message = "The price cannot be null")
+    @PositiveOrZero(message = "The price cannot be negative")
+    private BigDecimal price;
 
     @NotBlank(message="The description cannot be empty")
     private String description;

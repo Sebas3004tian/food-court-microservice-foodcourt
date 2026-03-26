@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Entity
 @Table(name = "dishes")
 @NoArgsConstructor
@@ -20,6 +22,9 @@ public class DishEntity {
 
     @Column(unique = true, nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private BigDecimal price;
 
     @Column(nullable = false, columnDefinition = "TEXT")
     private String description;

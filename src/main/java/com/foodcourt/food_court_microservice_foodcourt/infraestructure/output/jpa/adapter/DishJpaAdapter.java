@@ -17,14 +17,29 @@ public class DishJpaAdapter implements IDishPersistencePort {
     private final IDishEntityMapper dishEntityMapper;
 
     @Override
+    public Optional<Dish> findOneById(Long id) {
+        return dishRepository.findById(id)
+                .map(dishEntityMapper::toDish);
+    }
+
+    @Override
     public Dish createDish(Dish dish) {
-        DishEntity dishEntity = dishRepository.save(dishEntityMapper.toEntity(dish));
-        return dishEntityMapper.toDish(dishEntity);
+        return saveDish(dish);
+    }
+
+    @Override
+    public Dish updateDish(Dish dish) {
+        return saveDish(dish);
     }
 
     @Override
     public Optional<Dish> findOneByName(String name) {
         return dishRepository.findOneByName(name)
                 .map(dishEntityMapper::toDish);
+    }
+
+    private Dish saveDish(Dish dish) {
+        DishEntity dishEntity = dishRepository.save(dishEntityMapper.toEntity(dish));
+        return dishEntityMapper.toDish(dishEntity);
     }
 }

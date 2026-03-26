@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.math.BigDecimal;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -13,6 +15,7 @@ public class Dish {
 
     private Long id;
     private String name;
+    private BigDecimal price;
     private String description;
     private String urlImage;
     private boolean active;

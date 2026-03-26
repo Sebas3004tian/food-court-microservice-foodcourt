@@ -9,6 +9,7 @@ public enum ExceptionResponse {
     RESTAURANT_ALREADY_EXISTS("Restaurant already exists"),
     RESTAURANT_NOT_FOUND("Restaurant not found"),
     CATEGORY_NOT_FOUND("Restaurant not found"),
+    DISH_NOT_FOUND("Dish not found"),
     UNAUTHORIZED_ERROR("You are not autorized to do this action"),
     USER_MICROSERVICE_ERROR("Error with user or user role"),
     DISH_ALREADY_EXISTS("Dish already exists");
