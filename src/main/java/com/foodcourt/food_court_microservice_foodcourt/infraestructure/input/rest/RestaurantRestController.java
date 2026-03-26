@@ -38,6 +38,12 @@ public class RestaurantRestController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
     @GetMapping("/paged")
+    @Operation(summary = "Get all available restaurants ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Restaurant paged"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "There are no restaurants created")
+    })
     public ResponseEntity<List<RestaurantResponseDto>> getAllPagedRestaurants(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
