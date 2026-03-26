@@ -2,6 +2,8 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.re
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.DishResponseDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.RestaurantResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IDishHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -12,6 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/dish")
@@ -60,5 +64,21 @@ public class DishRestController {
         return ResponseEntity.ok().build();
     }
 
+    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @GetMapping("/restaurant/{restaurantId}")
+    @Operation(summary = "Get all available dishes of a restaurant ")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dishes of a Restaurant paged"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "There are no dishes created")
+    })
+    public ResponseEntity<List<DishResponseDto>> getAllPagedRestaurants(
+            @PathVariable Long restaurantId,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ){
+        return ResponseEntity.ok(dishHandler.getDishesPagedByRestaurant(restaurantId,categoryId, page, size));
+    }
 
 }

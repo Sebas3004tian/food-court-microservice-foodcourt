@@ -14,6 +14,7 @@ import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class DishUseCase implements IDishServicePort {
 
@@ -71,6 +72,20 @@ public class DishUseCase implements IDishServicePort {
         dish.setActive(active);
 
         dishPersistencePort.updateDish(dish);
+    }
+
+    @Override
+    public List<Dish> getDishesPagedByRestaurant(Long restaurantId, Long categoryId, int page, int size) {
+
+        if (page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid pagination params");
+        }
+
+        if (categoryId != null) {
+            return dishPersistencePort.findByRestaurantAndCategoryPaged(restaurantId, categoryId, page, size);
+        }
+
+        return dishPersistencePort.findByRestaurantPaged(restaurantId, page, size);
     }
 
     @Override
