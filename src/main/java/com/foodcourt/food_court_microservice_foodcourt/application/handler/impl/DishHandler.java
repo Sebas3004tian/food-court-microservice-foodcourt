@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.application.handler.impl;
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateDishRequestDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IDishHandler;
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IDishRequestMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
@@ -22,5 +23,14 @@ public class DishHandler implements IDishHandler {
     public void createDish(CreateDishRequestDto createDishRequestDto) {
         Dish dish = dishRequestMapper.toDish(createDishRequestDto);
         dishServicePort.createDish(dish);
+    }
+
+    @Override
+    public void updateDish(Long dishId, UpdateDishRequestDto updateDishRequestDto) {
+        dishServicePort.updateDish(
+                dishId,
+                updateDishRequestDto.getPrice(),
+                updateDishRequestDto.getDescription()
+        );
     }
 }
