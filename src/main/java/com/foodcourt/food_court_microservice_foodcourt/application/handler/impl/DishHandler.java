@@ -33,4 +33,9 @@ public class DishHandler implements IDishHandler {
                 updateDishRequestDto.getDescription()
         );
     }
+
+    @Override
+    public void enableOrDisableDish(Long dishId, boolean active) {
+        dishServicePort.enableOrDisableDish(dishId,active);
+    }
 }

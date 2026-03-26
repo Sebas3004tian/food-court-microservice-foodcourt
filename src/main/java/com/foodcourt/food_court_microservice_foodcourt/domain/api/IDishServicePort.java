@@ -7,4 +7,5 @@ import java.math.BigDecimal;
 public interface IDishServicePort {
     void createDish(Dish dish);
     void updateDish(Long dishId, BigDecimal dishPrice, String dishDescription);
+    void enableOrDisableDish(Long dishId, boolean active);
 }

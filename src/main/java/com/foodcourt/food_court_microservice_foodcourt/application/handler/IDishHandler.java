@@ -6,4 +6,5 @@ import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.U
 public interface IDishHandler {
     void createDish(CreateDishRequestDto createDishRequestDto);
     void updateDish(Long dishId, UpdateDishRequestDto updateDishRequestDto);
+    void enableOrDisableDish(Long dishId, boolean active);
 }
