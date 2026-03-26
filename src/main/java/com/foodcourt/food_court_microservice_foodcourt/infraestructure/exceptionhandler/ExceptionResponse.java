@@ -1,7 +1,5 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
-
 public enum ExceptionResponse {
 
     VALIDATION_ERROR("Validation error"),

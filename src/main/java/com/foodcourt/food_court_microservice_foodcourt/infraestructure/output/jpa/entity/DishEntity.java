@@ -1,7 +1,5 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Category;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
