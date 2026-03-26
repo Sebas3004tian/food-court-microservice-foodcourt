@@ -18,4 +18,12 @@ public class Dish {
     private boolean active;
     private Restaurant restaurant;
     private Category category;
+
+    public void activate() {
+        this.active = true;
+    }
+
+    public void deactivate() {
+        this.active = false;
+    }
 }

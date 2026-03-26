@@ -50,7 +50,7 @@ public class DishUseCase implements IDishServicePort {
             throw new DishAlreadyExistsException("Dish name already exists");
         }
 
-        dish.setActive(true);
+        dish.activate();
 
         dishPersistencePort.createDish(dish);
     }
