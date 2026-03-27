@@ -99,8 +99,8 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    @ExceptionHandler(AlreadyExistException.class)
-    public ResponseEntity<Map<String, String>> handleAlreadyExistException(AlreadyExistException ex) {
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleAlreadyExistException(AlreadyExistsException ex) {
 
         Map<String, String> response = Map.of(
                 ERROR, ExceptionResponse.ALREADY_EXISTS.getMessage(),

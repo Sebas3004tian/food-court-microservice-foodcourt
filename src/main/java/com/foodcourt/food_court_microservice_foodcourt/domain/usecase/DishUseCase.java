@@ -9,7 +9,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.ICategoryPersi
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistException;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistsException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 
@@ -108,7 +108,7 @@ public class DishUseCase implements IDishServicePort {
         }
 
         if (dishPersistencePort.findOneByName(dish.getName()).isPresent()) {
-            throw new AlreadyExistException("Dish name already exists");
+            throw new AlreadyExistsException("Dish name already exists");
         }
 
         dish.activate();
