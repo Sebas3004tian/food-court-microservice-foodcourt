@@ -1,7 +1,6 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.rest;
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateOrderRequestDto;
-import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.OrderResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IOrderHandler;
 import io.swagger.v3.oas.annotations.Operation;
