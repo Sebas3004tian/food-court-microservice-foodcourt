@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.application.handler.impl;
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateOrderRequestDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.OrderResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IOrderHandler;
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IOrderRequestMapper;
@@ -33,5 +34,10 @@ public class OrderHandler implements IOrderHandler {
     @Override
     public List<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size) {
         return orderResponseMapper.toResponseList(orderServicePort.getOrderPagedByStatus(status,page,size));
+    }
+
+    @Override
+    public void assignOrder(Long orderId) {
+        orderServicePort.assignOrder(orderId);
     }
 }

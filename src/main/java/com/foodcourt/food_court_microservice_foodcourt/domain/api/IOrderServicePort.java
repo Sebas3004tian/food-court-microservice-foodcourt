@@ -9,4 +9,5 @@ public interface IOrderServicePort {
 
     void createOrder(Order order, List<OrderDish> orderDishList);
     List<Order> getOrderPagedByStatus(String status, int page, int size);
+    void assignOrder(Long orderId);
 }

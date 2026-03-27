@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.rest;
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateOrderRequestDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.OrderResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IOrderHandler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -50,5 +51,19 @@ public class OrderRestController {
             @RequestParam(defaultValue = "10") int size
     ){
         return ResponseEntity.ok(orderHandler.getOrderPagedByStatus(status,page, size));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PatchMapping("/{orderId}/assign")
+    @Operation(summary = "Assign an Order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order assigned successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with assign the order")
+    })
+    public ResponseEntity<Void> assignOrder(@PathVariable Long orderId){
+        orderHandler.assignOrder(orderId);
+        return ResponseEntity.ok().build();
     }
 }

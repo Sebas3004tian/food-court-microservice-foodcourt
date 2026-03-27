@@ -8,4 +8,5 @@ import java.util.List;
 public interface IOrderHandler {
     void createOrder(CreateOrderRequestDto createOrderRequestDto);
     List<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size);
+    void assignOrder(Long orderId);
 }

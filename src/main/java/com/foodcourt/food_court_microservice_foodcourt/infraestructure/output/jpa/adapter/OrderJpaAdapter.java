@@ -1,9 +1,11 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IOrderPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.DishEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.OrderDishEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.OrderEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IOrderEntityMapper;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -27,8 +30,7 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
 
     @Override
     public Order createOrder(Order order) {
-        OrderEntity orderEntity = orderRepository.save(orderEntityMapper.toEntity(order));
-        return orderEntityMapper.toOrder(orderEntity);
+        return saveOrder(order);
     }
 
     @Override
@@ -70,5 +72,21 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
         }
 
         return orderEntityMapper.toOrderList(orderEntityList);
+    }
+
+    @Override
+    public Optional<Order> findOneById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .map(orderEntityMapper::toOrder);
+    }
+
+    @Override
+    public Order updateOrder(Order order) {
+        return saveOrder(order);
+    }
+
+    private Order saveOrder(Order order) {
+        OrderEntity orderEntity = orderRepository.save(orderEntityMapper.toEntity(order));
+        return orderEntityMapper.toOrder(orderEntity);
     }
 }
