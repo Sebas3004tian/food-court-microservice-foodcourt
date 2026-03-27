@@ -90,7 +90,7 @@ class CreateOrderUseCaseTest {
         orderUseCase.createOrder(order, List.of(orderDish));
 
         verify(orderPersistencePort).createOrder(any(Order.class));
-        verify(orderDishPersistencePort).createOrderDishList(anyList());
+        verify(orderDishPersistencePort).createOrderDishList(anyList(),any());
     }
 
     @Test

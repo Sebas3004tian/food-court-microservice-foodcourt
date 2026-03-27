@@ -12,7 +12,9 @@ public enum ExceptionResponse {
     USER_MICROSERVICE_ERROR("Error with user or user role"),
     DISH_STATUS_ALREADY_SET("Dish status already set"),
     ILLEGAL_ARGUMENT_ERROR("Error in one argument"),
+    INVALID_ORDER_STATUS_ERROR("Error with the order status"),
     CLIENT_HAS_ACTIVE_ORDER("The customer already has an active order");
+
 
     private final String message;
 

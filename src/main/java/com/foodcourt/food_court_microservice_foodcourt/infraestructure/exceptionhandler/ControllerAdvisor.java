@@ -99,8 +99,8 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
     }
 
-    @ExceptionHandler(AlreadyExistException.class)
-    public ResponseEntity<Map<String, String>> handleAlreadyExistException(AlreadyExistException ex) {
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<Map<String, String>> handleAlreadyExistException(AlreadyExistsException ex) {
 
         Map<String, String> response = Map.of(
                 ERROR, ExceptionResponse.ALREADY_EXISTS.getMessage(),
@@ -126,6 +126,17 @@ public class ControllerAdvisor {
 
         Map<String, String> response = Map.of(
                 ERROR, ExceptionResponse.ILLEGAL_ARGUMENT_ERROR.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(InvalidOrderStatusException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidOrderStatusException(InvalidOrderStatusException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.INVALID_ORDER_STATUS_ERROR.getMessage(),
                 MESSAGE, ex.getMessage()
         );
 

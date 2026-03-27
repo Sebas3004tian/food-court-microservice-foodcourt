@@ -9,4 +9,6 @@ import java.util.List;
 public interface IOrderPersistencePort {
     Order createOrder(Order order);
     boolean existsByClientIdAndStatusIn(Long clientId, List<OrderStatus> statusList);
+
+    List<Order> findByRestaurantIdAndStatusPaged(Long restaurantId, OrderStatus orderStatus, int page, int size);
 }

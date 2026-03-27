@@ -1,7 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception;
 
-public class AlreadyExistException extends RuntimeException {
-    public AlreadyExistException(String message) {
+public class AlreadyExistsException extends RuntimeException {
+    public AlreadyExistsException(String message) {
         super(message);
     }
 }

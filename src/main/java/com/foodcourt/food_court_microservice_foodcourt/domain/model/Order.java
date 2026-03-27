@@ -5,6 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -17,6 +20,11 @@ public class Order {
     private OrderStatus status;
     private Long employeeId;
     private String securityPin;
+
+    private List<OrderDish> orderDishes;
+
+    private LocalDateTime creationDate;
+    private LocalDateTime updatedDate;
 
     public static Order createPendingOrder(Order order, Long clientId, Restaurant restaurant, String securityPin) {
         order.setClientId(clientId);

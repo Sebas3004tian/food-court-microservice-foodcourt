@@ -1,10 +1,12 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.configuration;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IEmployeeServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
+import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.EmployeeUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.UserFeignAdapter;
@@ -26,12 +28,14 @@ public class BeanConfiguration {
     private final ICategoryRepository categoryRepository;
     private final IOrderRepository orderRepository;
     private final IOrderDishRepository orderDishRepository;
+    private final IEmployeeRepository employeeRepository;
 
     private final IRestaurantEntityMapper restaurantEntityMapper;
     private final IDishEntityMapper dishEntityMapper;
     private final ICategoryEntityMapper categoryEntityMapper;
     private final IOrderEntityMapper orderEntityMapper;
     private final IOrderDishEntityMapper orderDishEntityMapper;
+    private final IEmployeeEntityMapper employeeEntityMapper;
 
     private final IUserFeignClient userFeignClient;
 
@@ -52,13 +56,18 @@ public class BeanConfiguration {
 
     @Bean
     public IOrderPersistencePort orderPersistencePort(){
-        return new OrderJpaAdapter(orderRepository,orderEntityMapper);
+        return new OrderJpaAdapter(orderRepository,orderDishRepository,orderEntityMapper);
     }
 
     @Bean
     public IOrderDishPersistencePort orderDishPersistencePort(){
-        return new OrderDishJpaAdapter(orderDishRepository,orderDishEntityMapper);
+        return new OrderDishJpaAdapter(orderDishRepository,orderDishEntityMapper,orderEntityMapper);
     }
+    @Bean
+    public IEmployeePersistencePort employeePersistencePort(){
+        return new EmployeeJpaAdapter(employeeRepository,employeeEntityMapper);
+    }
+
 
     @Bean
     public IJwtServicePort jwtServicePort(){
@@ -95,7 +104,19 @@ public class BeanConfiguration {
                 orderDishPersistencePort(),
                 dishPersistencePort(),
                 restaurantPersistencePort(),
+                employeePersistencePort(),
                 jwtServicePort()
+        );
+    }
+
+    @Bean
+    public IEmployeeServicePort employeeServicePort(){
+        return new EmployeeUseCase(
+                employeePersistencePort(),
+                restaurantPersistencePort(),
+                jwtServicePort(),
+                userExternalPort()
+
         );
     }
 }
