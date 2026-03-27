@@ -7,13 +7,9 @@ import java.math.BigDecimal;
 
 @Getter
 @Setter
-public class DishResponseDto {
+public class OrderDishResponseDto {
     private Long id;
-    private String name;
+    private DishResponseDto dish;
+    private Integer amount;
     private BigDecimal price;
-    private String description;
-    private String urlImage;
-
-    private CategoryResponseDto category;
-
 }

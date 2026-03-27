@@ -14,7 +14,6 @@ import java.math.BigDecimal;
 public class OrderDish {
 
     private Long id;
-    private Order order;
     private Dish dish;
     private Integer amount;
     private BigDecimal price;

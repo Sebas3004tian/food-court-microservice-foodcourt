@@ -7,6 +7,8 @@ import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jp
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IEmployeeRepository;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 public class EmployeeJpaAdapter implements IEmployeePersistencePort {
 
@@ -23,5 +25,11 @@ public class EmployeeJpaAdapter implements IEmployeePersistencePort {
     @Override
     public boolean existsByUserId(Long userId) {
         return employeeRepository.existsByUserId(userId);
+    }
+
+    @Override
+    public Optional<Employee> findOneByUserId(Long userId) {
+        return employeeRepository.findByUserId(userId)
+                .map(employeeEntityMapper::toEmployee);
     }
 }

@@ -2,6 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
@@ -14,14 +15,16 @@ public class OrderUseCase implements IOrderServicePort {
     private final IOrderDishPersistencePort orderDishPersistencePort;
     private final IDishPersistencePort dishPersistencePort;
     private final IRestaurantPersistencePort restaurantPersistencePort;
+    private final IEmployeePersistencePort employeePersistencePort;
 
     private final IJwtServicePort jwtServicePort;
 
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IJwtServicePort jwtServicePort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, IJwtServicePort jwtServicePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.restaurantPersistencePort = restaurantPersistencePort;
+        this.employeePersistencePort = employeePersistencePort;
         this.jwtServicePort = jwtServicePort;
     }
 
@@ -39,9 +42,37 @@ public class OrderUseCase implements IOrderServicePort {
 
         Order persistedOrder = orderPersistencePort.createOrder(orderToSave);
 
-        List<OrderDish> preparedDishes = prepareDishes(restaurantId, orderDishList, persistedOrder);
+        List<OrderDish> preparedDishes = prepareDishes(restaurantId, orderDishList);
 
-        orderDishPersistencePort.createOrderDishList(preparedDishes);
+        orderDishPersistencePort.createOrderDishList(preparedDishes,persistedOrder);
+    }
+
+    @Override
+    public List<Order> getOrderPagedByStatus(String status, int page, int size) {
+
+        if (page < 0 || size <= 0) {
+            throw new IllegalArgumentException("Invalid pagination params");
+        }
+
+        Long userId  = jwtServicePort.getAuthenticatedUserId();
+        Employee employee = employeePersistencePort.findOneByUserId(userId)
+                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id "+userId));
+        Long restaurantId = employee.getRestaurant().getId();
+
+        OrderStatus orderStatus;
+
+        try {
+            orderStatus = OrderStatus.valueOf(status.toUpperCase());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new InvalidOrderStatusException("Invalid order status: " + status);
+        }
+
+        return orderPersistencePort.findByRestaurantIdAndStatusPaged(
+                restaurantId,
+                orderStatus,
+                page,
+                size
+        );
     }
 
     private void validateClientHasNoActiveOrders(Long clientId){
@@ -53,15 +84,13 @@ public class OrderUseCase implements IOrderServicePort {
         }
     }
 
-    private List<OrderDish> prepareDishes(Long restaurantId, List<OrderDish> orderDishList, Order persistedOrder) {
+    private List<OrderDish> prepareDishes(Long restaurantId, List<OrderDish> orderDishList) {
 
         for (OrderDish orderDish : orderDishList) {
 
             if (orderDish.getAmount() == null || orderDish.getAmount() <= 0) {
                 throw new IllegalArgumentException("Invalid amount");
             }
-
-            orderDish.setOrder(persistedOrder);
 
             Long dishId = orderDish.getDish().getId();
             Dish dish = dishPersistencePort.findOneById(dishId)

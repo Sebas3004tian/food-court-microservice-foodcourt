@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
@@ -24,8 +25,9 @@ public class OrderEntity {
     @Column(name = "client_id",nullable = false)
     private Long clientId;
 
-    @Column(name = "restaurant_id",nullable = false)
-    private Long restaurantId;
+    @ManyToOne
+    @JoinColumn(name = "restaurant_id", nullable = false)
+    private RestaurantEntity restaurant;
 
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
@@ -41,6 +43,9 @@ public class OrderEntity {
 
     @Column(name = "update_date")
     private LocalDateTime updatedDate;
+
+    @OneToMany(mappedBy = "order")
+    private List<OrderDishEntity> orderDishes;
 
     @PrePersist
     public void prePersist() {
