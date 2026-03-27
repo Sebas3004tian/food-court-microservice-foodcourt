@@ -10,7 +10,9 @@ public enum ExceptionResponse {
     DATA_NOT_FOUND("Data not found"),
     ALREADY_EXISTS("Already exists"),
     USER_MICROSERVICE_ERROR("Error with user or user role"),
-    DISH_STATUS_ALREADY_SET("Dish status already set");
+    DISH_STATUS_ALREADY_SET("Dish status already set"),
+    ILLEGAL_ARGUMENT_ERROR("Error in one argument"),
+    CLIENT_HAS_ACTIVE_ORDER("The customer already has an active order");
 
     private final String message;
 
