@@ -121,4 +121,25 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalArgumentException(IllegalArgumentException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.ILLEGAL_ARGUMENT_ERROR.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(ClientHasActiveOrderException.class)
+    public ResponseEntity<Map<String, String>> handleClientHasActiveOrderException(ClientHasActiveOrderException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.CLIENT_HAS_ACTIVE_ORDER.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 }

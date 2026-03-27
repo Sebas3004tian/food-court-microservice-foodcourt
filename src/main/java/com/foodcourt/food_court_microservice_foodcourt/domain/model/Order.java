@@ -18,4 +18,11 @@ public class Order {
     private Long employeeId;
     private String securityPin;
 
+    public static Order createPendingOrder(Order order, Long clientId, Restaurant restaurant, String securityPin) {
+        order.setClientId(clientId);
+        order.setRestaurant(restaurant);
+        order.setStatus(OrderStatus.PENDIENTE);
+        order.setSecurityPin(securityPin);
+        return order;
+    }
 }

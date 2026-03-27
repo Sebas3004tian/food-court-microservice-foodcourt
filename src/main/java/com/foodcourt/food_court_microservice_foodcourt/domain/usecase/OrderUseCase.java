@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
@@ -27,30 +28,45 @@ public class OrderUseCase implements IOrderServicePort {
     @Override
     public void createOrder(Order order, List<OrderDish> orderDishList) {
         Long clientId = jwtServicePort.getAuthenticatedUserId();
-        order.setClientId(clientId);
+
+        boolean hasActiveOrders = orderPersistencePort.existsByClientIdAndStatusIn(clientId,
+                List.of(OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO));
+
+        if (hasActiveOrders) {
+            throw new ClientHasActiveOrderException("Client cannot create a new order while having an active order");
+        }
 
         Long restaurantId = order.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
                 .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+restaurantId));
 
-        order.setRestaurant(restaurant);
-        order.setStatus(OrderStatus.PENDIENTE);
-        order.setSecurityPin("Pin ultra secret");
+        Order orderToSave = Order.createPendingOrder(order,clientId, restaurant, "Pin ultra secret");
 
-        order = orderPersistencePort.createOrder(order);
+        Order persistedOrder = orderPersistencePort.createOrder(orderToSave);
+
+        List<OrderDish> preparedDishes = prepareDishes(restaurantId, orderDishList, persistedOrder);
+
+        orderDishPersistencePort.createOrderDishList(preparedDishes);
+    }
+
+    private List<OrderDish> prepareDishes(Long restaurantId, List<OrderDish> orderDishList, Order persistedOrder) {
 
         for (OrderDish orderDish : orderDishList) {
 
-            orderDish.setOrder(order);
+            orderDish.setOrder(persistedOrder);
 
             Long dishId = orderDish.getDish().getId();
             Dish dish = dishPersistencePort.findOneById(dishId)
                     .orElseThrow(() -> new NoDataFoundException("Not found the Dish with id "+dishId));
+
+            if (!dish.getRestaurant().getId().equals(restaurantId)) {
+                throw new IllegalArgumentException("All dishes must belong to the same restaurant");
+            }
+
             orderDish.setDish(dish);
             orderDish.setPrice(orderDish.calculateTotal());
         }
-
-        orderDishPersistencePort.createOrderDishList(orderDishList);
+        return orderDishList;
     }
 
 }
