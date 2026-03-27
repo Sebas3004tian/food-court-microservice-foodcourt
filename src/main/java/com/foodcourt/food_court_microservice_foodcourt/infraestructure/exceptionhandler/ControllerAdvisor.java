@@ -132,6 +132,17 @@ public class ControllerAdvisor {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
 
+    @ExceptionHandler(InvalidOrderStatusException.class)
+    public ResponseEntity<Map<String, String>> handleInvalidOrderStatusException(InvalidOrderStatusException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.INVALID_ORDER_STATUS_ERROR.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
     @ExceptionHandler(ClientHasActiveOrderException.class)
     public ResponseEntity<Map<String, String>> handleClientHasActiveOrderException(ClientHasActiveOrderException ex) {
 
