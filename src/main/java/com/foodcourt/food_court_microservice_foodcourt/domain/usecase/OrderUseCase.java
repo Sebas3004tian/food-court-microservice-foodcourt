@@ -29,12 +29,7 @@ public class OrderUseCase implements IOrderServicePort {
     public void createOrder(Order order, List<OrderDish> orderDishList) {
         Long clientId = jwtServicePort.getAuthenticatedUserId();
 
-        boolean hasActiveOrders = orderPersistencePort.existsByClientIdAndStatusIn(clientId,
-                List.of(OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO));
-
-        if (hasActiveOrders) {
-            throw new ClientHasActiveOrderException("Client cannot create a new order while having an active order");
-        }
+        validateClientHasNoActiveOrders(clientId);
 
         Long restaurantId = order.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
@@ -49,9 +44,22 @@ public class OrderUseCase implements IOrderServicePort {
         orderDishPersistencePort.createOrderDishList(preparedDishes);
     }
 
+    private void validateClientHasNoActiveOrders(Long clientId){
+        boolean hasActiveOrders = orderPersistencePort.existsByClientIdAndStatusIn(clientId,
+                List.of(OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO));
+
+        if (hasActiveOrders) {
+            throw new ClientHasActiveOrderException("Client cannot create a new order while having an active order");
+        }
+    }
+
     private List<OrderDish> prepareDishes(Long restaurantId, List<OrderDish> orderDishList, Order persistedOrder) {
 
         for (OrderDish orderDish : orderDishList) {
+
+            if (orderDish.getAmount() == null || orderDish.getAmount() <= 0) {
+                throw new IllegalArgumentException("Invalid amount");
+            }
 
             orderDish.setOrder(persistedOrder);
 

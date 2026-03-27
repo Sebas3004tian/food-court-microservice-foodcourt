@@ -29,7 +29,7 @@ public class OrderRestController {
             @ApiResponse(responseCode = "201", description = "Order created successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid data"),
             @ApiResponse(responseCode = "403", description = "Access Denied"),
-            @ApiResponse(responseCode = "409", description = "aaaaaa")//Falta por completar esto
+            @ApiResponse(responseCode = "409", description = "Conflict with some attribute")
     })
     public ResponseEntity<Void> createOrder(@Valid @RequestBody CreateOrderRequestDto createOrderRequestDto){
         orderHandler.createOrder(createOrderRequestDto);
