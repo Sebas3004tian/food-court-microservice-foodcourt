@@ -6,6 +6,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidO
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 
 import java.util.List;
 
@@ -73,6 +74,31 @@ public class OrderUseCase implements IOrderServicePort {
                 page,
                 size
         );
+    }
+
+    @Override
+    public void assignOrder(Long orderId) {
+        Long userId = jwtServicePort.getAuthenticatedUserId();
+
+        Employee employee = employeePersistencePort.findOneByUserId(userId)
+                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id "+userId));
+
+        Order order = orderPersistencePort.findOneById(orderId)
+                .orElseThrow(() -> new NoDataFoundException("Not found the Order with id "+orderId));
+
+        if (!order.getRestaurant().getId().equals(employee.getRestaurant().getId())) {
+            throw new UnauthorizedException("You are not a employee of the restaurant order");
+        }
+
+        if (order.getStatus() != OrderStatus.PENDIENTE) {
+            throw new InvalidOrderStatusException("The order have to has PENDING status");
+        }
+
+        order.setEmployeeId(employee.getId());
+
+        order.setStatus(OrderStatus.EN_PREPARACION);
+
+        orderPersistencePort.updateOrder(order);
     }
 
     private void validateClientHasNoActiveOrders(Long clientId){

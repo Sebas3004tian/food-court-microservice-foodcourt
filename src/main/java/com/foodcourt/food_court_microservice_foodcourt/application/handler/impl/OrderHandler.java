@@ -34,4 +34,9 @@ public class OrderHandler implements IOrderHandler {
     public List<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size) {
         return orderResponseMapper.toResponseList(orderServicePort.getOrderPagedByStatus(status,page,size));
     }
+
+    @Override
+    public void assignOrder(Long orderId) {
+        orderServicePort.assignOrder(orderId);
+    }
 }

@@ -51,4 +51,18 @@ public class OrderRestController {
     ){
         return ResponseEntity.ok(orderHandler.getOrderPagedByStatus(status,page, size));
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PatchMapping("/{orderId}/assign")
+    @Operation(summary = "Assign an Order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Order assigned successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with assign the order")
+    })
+    public ResponseEntity<Void> assignOrder(@PathVariable Long orderId){
+        orderHandler.assignOrder(orderId);
+        return ResponseEntity.ok().build();
+    }
 }

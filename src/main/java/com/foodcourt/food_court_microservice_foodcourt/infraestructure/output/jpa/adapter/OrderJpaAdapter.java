@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 
 @RequiredArgsConstructor
@@ -27,8 +28,7 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
 
     @Override
     public Order createOrder(Order order) {
-        OrderEntity orderEntity = orderRepository.save(orderEntityMapper.toEntity(order));
-        return orderEntityMapper.toOrder(orderEntity);
+        return saveOrder(order);
     }
 
     @Override
@@ -70,5 +70,21 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
         }
 
         return orderEntityMapper.toOrderList(orderEntityList);
+    }
+
+    @Override
+    public Optional<Order> findOneById(Long orderId) {
+        return orderRepository.findById(orderId)
+                .map(orderEntityMapper::toOrder);
+    }
+
+    @Override
+    public Order updateOrder(Order order) {
+        return saveOrder(order);
+    }
+
+    private Order saveOrder(Order order) {
+        OrderEntity orderEntity = orderRepository.save(orderEntityMapper.toEntity(order));
+        return orderEntityMapper.toOrder(orderEntity);
     }
 }
