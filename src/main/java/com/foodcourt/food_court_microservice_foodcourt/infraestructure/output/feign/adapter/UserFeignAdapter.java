@@ -1,0 +1,21 @@
+package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter;
+
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.IUserFeignClient;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
+public class UserFeignAdapter implements IUserExternalPort {
+
+    private final IUserFeignClient userFeignClient;
+
+    @Override
+    public boolean isUserOwner(Long userId) {
+        return "PROPIETARIO".equals(userFeignClient.getUserRole(userId));
+    }
+
+    @Override
+    public boolean isUserEmployee(Long userId) {
+        return "EMPLEADO".equals(userFeignClient.getUserRole(userId));
+    }
+}
