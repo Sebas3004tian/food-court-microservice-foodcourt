@@ -9,7 +9,9 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCas
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.EmployeeUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.SmsFeignAdapter;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.UserFeignAdapter;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.ISmsFeignClient;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.IUserFeignClient;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.*;
@@ -38,6 +40,7 @@ public class BeanConfiguration {
     private final IEmployeeEntityMapper employeeEntityMapper;
 
     private final IUserFeignClient userFeignClient;
+    private final ISmsFeignClient smsFeignClient;
 
     @Bean
     public IRestaurantPersistencePort restaurantPersistencePort(){
@@ -80,6 +83,11 @@ public class BeanConfiguration {
     }
 
     @Bean
+    public ISmsClientPort smsClientPort(){
+        return new SmsFeignAdapter(smsFeignClient);
+    }
+
+    @Bean
     public IRestaurantServicePort restaurantServicePort(){
         return new RestaurantUseCase(
                 restaurantPersistencePort(),
@@ -105,6 +113,8 @@ public class BeanConfiguration {
                 dishPersistencePort(),
                 restaurantPersistencePort(),
                 employeePersistencePort(),
+                smsClientPort(),
+                userExternalPort(),
                 jwtServicePort()
         );
     }

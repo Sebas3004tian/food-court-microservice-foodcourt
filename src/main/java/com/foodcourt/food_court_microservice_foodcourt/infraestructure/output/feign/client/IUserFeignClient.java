@@ -16,4 +16,7 @@ public interface IUserFeignClient {
 
     @GetMapping("/user/{id}/role")
     String getUserRole(@PathVariable Long id);
+
+    @GetMapping("/user/{id}/phone")
+    String getPhone(@PathVariable Long id);
 }

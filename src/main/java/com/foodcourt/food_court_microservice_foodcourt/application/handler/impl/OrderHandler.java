@@ -39,4 +39,9 @@ public class OrderHandler implements IOrderHandler {
     public void assignOrder(Long orderId) {
         orderServicePort.assignOrder(orderId);
     }
+
+    @Override
+    public String markOrderAsReady(Long orderId) {
+        return orderServicePort.markOrderAsReady(orderId);
+    }
 }
