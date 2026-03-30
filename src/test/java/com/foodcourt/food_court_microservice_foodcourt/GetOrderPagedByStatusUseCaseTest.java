@@ -11,6 +11,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePor
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IOrderPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -39,6 +40,23 @@ class GetOrderPagedByStatusUseCaseTest {
     @InjectMocks
     private OrderUseCase orderUseCase;
 
+    private Restaurant restaurant;
+    private Employee employee;
+    private Order order;
+
+    @BeforeEach
+    void setUp() {
+        restaurant = new Restaurant();
+        restaurant.setId(1L);
+
+        employee = new Employee();
+        employee.setRestaurant(restaurant);
+
+        order = new Order();
+        order.setId(1L);
+        order.setStatus(OrderStatus.PENDIENTE);
+    }
+
     @Test
     void shouldReturnOrdersSuccessfully() {
         String status = "PENDIENTE";
@@ -46,17 +64,6 @@ class GetOrderPagedByStatusUseCaseTest {
         int size = 10;
 
         Long userId = 10L;
-        Long restaurantId = 1L;
-
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(restaurantId);
-
-        Employee employee = new Employee();
-        employee.setRestaurant(restaurant);
-
-        Order order = new Order();
-        order.setId(1L);
-        order.setStatus(OrderStatus.PENDIENTE);
 
         List<Order> expectedOrders = List.of(order);
 
@@ -66,7 +73,7 @@ class GetOrderPagedByStatusUseCaseTest {
                 .thenReturn(Optional.of(employee));
 
         when(orderPersistencePort.findByRestaurantIdAndStatusPaged(
-                restaurantId,
+                restaurant.getId(),
                 OrderStatus.PENDIENTE,
                 page,
                 size
@@ -79,7 +86,7 @@ class GetOrderPagedByStatusUseCaseTest {
         assertEquals(OrderStatus.PENDIENTE, result.get(0).getStatus());
 
         verify(orderPersistencePort).findByRestaurantIdAndStatusPaged(
-                restaurantId,
+                restaurant.getId(),
                 OrderStatus.PENDIENTE,
                 page,
                 size
@@ -93,13 +100,6 @@ class GetOrderPagedByStatusUseCaseTest {
         int size = 10;
 
         Long userId = 10L;
-        Long restaurantId = 1L;
-
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(restaurantId);
-
-        Employee employee = new Employee();
-        employee.setRestaurant(restaurant);
 
         when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
 
@@ -107,7 +107,7 @@ class GetOrderPagedByStatusUseCaseTest {
                 .thenReturn(Optional.of(employee));
 
         when(orderPersistencePort.findByRestaurantIdAndStatusPaged(
-                restaurantId,
+                restaurant.getId(),
                 OrderStatus.PENDIENTE,
                 page,
                 size
@@ -118,7 +118,7 @@ class GetOrderPagedByStatusUseCaseTest {
         );
 
         verify(orderPersistencePort).findByRestaurantIdAndStatusPaged(
-                restaurantId,
+                restaurant.getId(),
                 OrderStatus.PENDIENTE,
                 page,
                 size

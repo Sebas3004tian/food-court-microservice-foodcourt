@@ -14,7 +14,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
 @ExtendWith(MockitoExtension.class)
 class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
 
@@ -24,10 +23,10 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
     @InjectMocks
     private DishUseCase dishUseCase;
 
-    private final Long RESTAURANT_ID = 1L;
-    private final Long CATEGORY_ID = 2L;
-    private final int PAGE = 0;
-    private final int SIZE = 10;
+    private static final Long RESTAURANT_ID = 1L;
+    private static final Long CATEGORY_ID = 2L;
+    private static final int PAGE = 0;
+    private static final int SIZE = 10;
 
     private Dish dish;
 

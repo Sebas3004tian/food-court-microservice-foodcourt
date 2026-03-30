@@ -18,10 +18,9 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class AssignOrderUseCaseTest {
-    
+
     @Mock
     private IOrderPersistencePort orderPersistencePort;
 
@@ -33,7 +32,7 @@ class AssignOrderUseCaseTest {
 
     @Mock
     private IRestaurantPersistencePort restaurantPersistencePort;
-    
+
     @Mock
     private IEmployeePersistencePort employeePersistencePort;
 
@@ -42,108 +41,86 @@ class AssignOrderUseCaseTest {
 
     @Mock
     private IUserExternalPort userExternalPort;
-    
+
     @Mock
     private IJwtServicePort jwtServicePort;
-    
+
     @InjectMocks
     private OrderUseCase orderUseCase;
 
+    private Employee employee;
+    private Order order;
+    private Restaurant restaurant;
+
     @BeforeEach
     void setUp() {
-        orderPersistencePort = mock(IOrderPersistencePort.class);
-        employeePersistencePort = mock(IEmployeePersistencePort.class);
-        jwtServicePort = mock(IJwtServicePort.class);
+        restaurant = new Restaurant();
+        restaurant.setId(10L);
 
-        orderUseCase = new OrderUseCase( orderPersistencePort, orderDishPersistencePort, dishPersistencePort, restaurantPersistencePort, employeePersistencePort,smsClientPort,userExternalPort, jwtServicePort);
+        employee = new Employee();
+        employee.setId(1L);
+        employee.setRestaurant(restaurant);
+
+        order = new Order();
+        order.setId(1L);
+        order.setRestaurant(restaurant);
+        order.setStatus(OrderStatus.PENDIENTE);
     }
 
     @Test
     void shouldAssignOrderAndSetStatusInPreparation() {
-        Long orderId = 1L;
         Long userId = 100L;
-
-        Employee employee = new Employee();
-        employee.setId(1L);
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(10L);
-        employee.setRestaurant(restaurant);
-
-        Order order = new Order();
-        order.setId(orderId);
-        order.setRestaurant(restaurant);
-        order.setStatus(OrderStatus.PENDIENTE);
 
         when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
         when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(orderId)).thenReturn(Optional.of(order));
-        when(orderPersistencePort.updateOrder(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
-        orderUseCase.assignOrder(orderId);
+        orderUseCase.assignOrder(order.getId());
 
         assertEquals(employee.getId(), order.getEmployeeId());
         assertEquals(OrderStatus.EN_PREPARACION, order.getStatus());
 
-        verify(orderPersistencePort, times(1)).updateOrder(order);
+        verify(orderPersistencePort).updateOrder(order);
     }
 
     @Test
     void shouldThrowIfOrderNotFound() {
-        Long orderId = 1L;
         Long userId = 100L;
 
         when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
-        when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(new Employee()));
-        when(orderPersistencePort.findOneById(orderId)).thenReturn(Optional.empty());
+        when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
+        when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.empty());
 
+        Long orderId = order.getId();
         assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(orderId));
     }
 
     @Test
     void shouldThrowIfEmployeeNotInSameRestaurant() {
-        Long orderId = 1L;
         Long userId = 100L;
 
-        Employee employee = new Employee();
-        employee.setId(1L);
-        Restaurant employeeRestaurant = new Restaurant();
-        employeeRestaurant.setId(99L);
-        employee.setRestaurant(employeeRestaurant);
-
-        Order order = new Order();
-        order.setId(orderId);
-        Restaurant orderRestaurant = new Restaurant();
-        orderRestaurant.setId(10L);
-        order.setRestaurant(orderRestaurant);
-        order.setStatus(OrderStatus.PENDIENTE);
+        Restaurant anotherRestaurant = new Restaurant();
+        anotherRestaurant.setId(99L);
+        employee.setRestaurant(anotherRestaurant);
 
         when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
         when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(orderId)).thenReturn(Optional.of(order));
+        when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
+        Long orderId = order.getId();
         assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(orderId));
     }
 
     @Test
     void shouldThrowIfOrderAlreadyInPreparation() {
-        Long orderId = 1L;
         Long userId = 100L;
-
-        Employee employee = new Employee();
-        employee.setId(1L);
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(10L);
-        employee.setRestaurant(restaurant);
-
-        Order order = new Order();
-        order.setId(orderId);
-        order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.EN_PREPARACION);
 
         when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
         when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(orderId)).thenReturn(Optional.of(order));
+        when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
+        Long orderId = order.getId();
         assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(orderId));
     }
 }

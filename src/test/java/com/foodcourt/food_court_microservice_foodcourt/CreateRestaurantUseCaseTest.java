@@ -6,6 +6,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPer
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UserServiceException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,22 +28,27 @@ class CreateRestaurantUseCaseTest {
     @InjectMocks
     private RestaurantUseCase restaurantUseCase;
 
-    @Test
-    void shouldCreateRestaurantSuccessfully() {
+    private Restaurant restaurant;
 
-        Long ownerId = 11L;
-
-        Restaurant restaurant = new Restaurant(
+    @BeforeEach
+    void setUp() {
+        restaurant = new Restaurant(
                 1L,
                 "pepitotest",
                 111L,
                 "Cra test # test-test",
                 "+1",
                 "https://...",
-                ownerId
+                11L
         );
+    }
 
-        when(userExternalPort.isUserOwner(11L))
+    @Test
+    void shouldCreateRestaurantSuccessfully() {
+
+        Long ownerId = 11L;
+
+        when(userExternalPort.isUserOwner(ownerId))
                 .thenReturn(true);
 
         restaurantUseCase.createRestaurant(restaurant);
@@ -55,17 +61,7 @@ class CreateRestaurantUseCaseTest {
 
         Long ownerId = 11L;
 
-        Restaurant restaurant = new Restaurant(
-                1L,
-                "pepitotest",
-                111L,
-                "Cra test # test-test",
-                "+1",
-                "https://...",
-                ownerId
-        );
-
-        when(userExternalPort.isUserOwner(11L))
+        when(userExternalPort.isUserOwner(ownerId))
                 .thenReturn(false);
 
         assertThrows(InvalidUserRoleException.class, () ->
@@ -80,17 +76,7 @@ class CreateRestaurantUseCaseTest {
 
         Long ownerId = 11L;
 
-        Restaurant restaurant = new Restaurant(
-                1L,
-                "pepitotest",
-                111L,
-                "Cra test # test-test",
-                "+1",
-                "https://...",
-                ownerId
-        );
-
-        when(userExternalPort.isUserOwner(11L))
+        when(userExternalPort.isUserOwner(ownerId))
                 .thenThrow(new UserServiceException("User not found", 404));
 
         assertThrows(UserServiceException.class, () ->

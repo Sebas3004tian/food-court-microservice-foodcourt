@@ -40,9 +40,9 @@ class EnableOrDisableDishUseCaseTest {
     private Dish dish;
     private Restaurant restaurant;
 
-    private final Long DISH_ID = 1L;
-    private final Long RESTAURANT_ID = 10L;
-    private final Long OWNER_ID = 100L;
+    private static final Long DISH_ID = 1L;
+    private static final Long RESTAURANT_ID = 10L;
+    private static final Long OWNER_ID = 100L;
 
     @BeforeEach
     void setUp() {
@@ -53,7 +53,6 @@ class EnableOrDisableDishUseCaseTest {
         dish = new Dish();
         dish.setId(DISH_ID);
         dish.setActive(false);
-
         dish.setRestaurant(restaurant);
     }
 
@@ -96,7 +95,7 @@ class EnableOrDisableDishUseCaseTest {
     void shouldThrowExceptionWhenUserIsNotOwner() {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(999L); // otro usuario
+        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(999L);
 
         assertThrows(UnauthorizedException.class,
                 () -> dishUseCase.enableOrDisableDish(DISH_ID, true));

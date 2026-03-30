@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class CreateOrderUseCaseTest {
 
@@ -74,10 +73,10 @@ class CreateOrderUseCaseTest {
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
-        when(dishPersistencePort.findOneById(10L))
+        when(dishPersistencePort.findOneById(dish.getId()))
                 .thenReturn(Optional.of(dish));
 
         when(orderPersistencePort.createOrder(any(Order.class)))
@@ -90,7 +89,7 @@ class CreateOrderUseCaseTest {
         orderUseCase.createOrder(order, List.of(orderDish));
 
         verify(orderPersistencePort).createOrder(any(Order.class));
-        verify(orderDishPersistencePort).createOrderDishList(anyList(),any());
+        verify(orderDishPersistencePort).createOrderDishList(anyList(), any());
     }
 
     @Test
@@ -101,7 +100,7 @@ class CreateOrderUseCaseTest {
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.empty());
 
         List<OrderDish> dishes = List.of(orderDish);
@@ -120,10 +119,10 @@ class CreateOrderUseCaseTest {
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
-        when(dishPersistencePort.findOneById(10L))
+        when(dishPersistencePort.findOneById(dish.getId()))
                 .thenReturn(Optional.empty());
 
         when(orderPersistencePort.createOrder(any(Order.class)))
@@ -159,7 +158,7 @@ class CreateOrderUseCaseTest {
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
         orderDish.setAmount(0);
