@@ -18,16 +18,70 @@ public class OrderUseCase implements IOrderServicePort {
     private final IRestaurantPersistencePort restaurantPersistencePort;
     private final IEmployeePersistencePort employeePersistencePort;
 
+    private final ISmsClientPort smsClientPort;
+    private final IUserExternalPort userExternalPort;
+
     private final IJwtServicePort jwtServicePort;
 
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, IJwtServicePort jwtServicePort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsClientPort smsClientPort, IUserExternalPort userExternalPort, IJwtServicePort jwtServicePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.restaurantPersistencePort = restaurantPersistencePort;
         this.employeePersistencePort = employeePersistencePort;
+        this.smsClientPort = smsClientPort;
+        this.userExternalPort = userExternalPort;
         this.jwtServicePort = jwtServicePort;
     }
+
+    private Employee getAuthenticatedEmployee() {
+        Long userId = jwtServicePort.getAuthenticatedUserId();
+        return employeePersistencePort.findOneByUserId(userId)
+                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id " + userId));
+    }
+
+    private Order getOrderOrThrow(Long orderId) {
+        return orderPersistencePort.findOneById(orderId)
+                .orElseThrow(() -> new NoDataFoundException("Not found the Order with id " + orderId));
+    }
+
+    private void validateSameRestaurant(Employee employee, Order order) {
+        if (!order.getRestaurant().getId().equals(employee.getRestaurant().getId())) {
+            throw new UnauthorizedException("You are not an employee of the restaurant order");
+        }
+    }
+
+    private void validateOrderStatus(Order order, OrderStatus expectedStatus, String message) {
+        if (order.getStatus() != expectedStatus) {
+            throw new InvalidOrderStatusException(message);
+        }
+    }
+
+    private void validateAssignedEmployee(Order order, Employee employee) {
+        if (!order.getEmployeeId().equals(employee.getId())) {
+            throw new UnauthorizedException("You are not assigned to this order");
+        }
+    }
+
+    private String sendReadyOrderSms(Long userId, String pin) {
+        String phoneNumber = userExternalPort.getPhone(userId);
+
+        if (phoneNumber == null) {
+            return "Order marked as ready but SMS failed  (user service error)";
+        }
+
+        String response = smsClientPort.sendSms(
+                phoneNumber,
+                "Tu pedido está listo. PIN: " + pin
+        );
+
+        if (response == null) {
+            return "Order marked as ready but SMS failed (sms service error)";
+        }
+
+        return "Order marked as ready and SMS sent successfully: " + response;
+    }
+
 
     @Override
     public void createOrder(Order order, List<OrderDish> orderDishList) {
@@ -55,21 +109,17 @@ public class OrderUseCase implements IOrderServicePort {
             throw new IllegalArgumentException("Invalid pagination params");
         }
 
-        Long userId  = jwtServicePort.getAuthenticatedUserId();
-        Employee employee = employeePersistencePort.findOneByUserId(userId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id "+userId));
-        Long restaurantId = employee.getRestaurant().getId();
+        Employee employee = getAuthenticatedEmployee();
 
         OrderStatus orderStatus;
-
         try {
             orderStatus = OrderStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException | NullPointerException e) {
+        } catch (Exception e) {
             throw new InvalidOrderStatusException("Invalid order status: " + status);
         }
 
         return orderPersistencePort.findByRestaurantIdAndStatusPaged(
-                restaurantId,
+                employee.getRestaurant().getId(),
                 orderStatus,
                 page,
                 size
@@ -78,27 +128,40 @@ public class OrderUseCase implements IOrderServicePort {
 
     @Override
     public void assignOrder(Long orderId) {
-        Long userId = jwtServicePort.getAuthenticatedUserId();
+        Employee employee = getAuthenticatedEmployee();
+        Order order = getOrderOrThrow(orderId);
 
-        Employee employee = employeePersistencePort.findOneByUserId(userId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id "+userId));
-
-        Order order = orderPersistencePort.findOneById(orderId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Order with id "+orderId));
-
-        if (!order.getRestaurant().getId().equals(employee.getRestaurant().getId())) {
-            throw new UnauthorizedException("You are not a employee of the restaurant order");
-        }
-
-        if (order.getStatus() != OrderStatus.PENDIENTE) {
-            throw new InvalidOrderStatusException("The order have to has PENDING status");
-        }
+        validateSameRestaurant(employee, order);
+        validateOrderStatus(order, OrderStatus.PENDIENTE, "The order must be PENDING");
 
         order.setEmployeeId(employee.getId());
-
         order.setStatus(OrderStatus.EN_PREPARACION);
 
         orderPersistencePort.updateOrder(order);
+    }
+
+    @Override
+    public String markOrderAsReady(Long orderId) {
+        Employee employee = getAuthenticatedEmployee();
+        Order order = getOrderOrThrow(orderId);
+
+        validateSameRestaurant(employee, order);
+        validateOrderStatus(order, OrderStatus.EN_PREPARACION, "The order must be IN_PREPARATION");
+        validateAssignedEmployee(order, employee);
+
+        String pin = generatePin();
+
+        order.setStatus(OrderStatus.LISTO);
+        order.setSecurityPin(pin);
+        orderPersistencePort.updateOrder(order);
+
+        return sendReadyOrderSms(order.getClientId(), pin);
+    }
+
+    private String generatePin() {
+        java.security.SecureRandom random = new java.security.SecureRandom();
+        int number = random.nextInt(1000000);
+        return String.format("%06d", number);
     }
 
     private void validateClientHasNoActiveOrders(Long clientId){

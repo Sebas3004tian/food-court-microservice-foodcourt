@@ -9,4 +9,5 @@ public interface IOrderHandler {
     void createOrder(CreateOrderRequestDto createOrderRequestDto);
     List<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size);
     void assignOrder(Long orderId);
+    String markOrderAsReady(Long orderId);
 }

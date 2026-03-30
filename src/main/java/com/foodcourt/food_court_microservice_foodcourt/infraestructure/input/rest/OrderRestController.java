@@ -65,4 +65,17 @@ public class OrderRestController {
         orderHandler.assignOrder(orderId);
         return ResponseEntity.ok().build();
     }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PatchMapping("/{orderId}/ready")
+    @Operation(summary = "aaaa")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "aaa"),
+            @ApiResponse(responseCode = "400", description = "aa"),
+            @ApiResponse(responseCode = "403", description = "aaa"),
+            @ApiResponse(responseCode = "409", description = "aaa")
+    })
+    public ResponseEntity<String> markOrderAsReady(@PathVariable Long orderId){
+        return ResponseEntity.ok(orderHandler.markOrderAsReady(orderId));
+    }
 }

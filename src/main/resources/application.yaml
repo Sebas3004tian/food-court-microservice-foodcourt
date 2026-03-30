@@ -42,6 +42,10 @@ jwt:
 user-service:
   url: http://localhost:8090/api/v1
 
+message-service:
+  url: http://localhost:8081/api/v1
+
+
 feign:
   circuitbreaker:
     enabled: true

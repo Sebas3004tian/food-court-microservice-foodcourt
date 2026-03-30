@@ -18,4 +18,9 @@ public class UserFeignAdapter implements IUserExternalPort {
     public boolean isUserEmployee(Long userId) {
         return "EMPLEADO".equals(userFeignClient.getUserRole(userId));
     }
+
+    @Override
+    public String getPhone(Long id) {
+        return userFeignClient.getPhone(id);
+    }
 }

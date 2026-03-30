@@ -11,4 +11,9 @@ public class UserFeignClientFallback implements IUserFeignClient {
     public String getUserRole(Long id) {
         throw new ExternalServiceException("User service unavailable");
     }
+
+    @Override
+    public String getPhone(Long id) {
+        return null;
+    }
 }
