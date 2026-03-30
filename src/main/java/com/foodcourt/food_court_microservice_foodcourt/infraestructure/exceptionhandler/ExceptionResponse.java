@@ -1,5 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ExternalServiceException;
+
 public enum ExceptionResponse {
 
     ACCESS_DENIED("You do not have permission to access this resource"),
@@ -13,7 +15,8 @@ public enum ExceptionResponse {
     DISH_STATUS_ALREADY_SET("Dish status already set"),
     ILLEGAL_ARGUMENT_ERROR("Error in one argument"),
     INVALID_ORDER_STATUS_ERROR("Error with the order status"),
-    CLIENT_HAS_ACTIVE_ORDER("The customer already has an active order");
+    CLIENT_HAS_ACTIVE_ORDER("The customer already has an active order"),
+    MICROSERVICE_HAS_PROBLEM("Unable to connect to the service");
 
 
     private final String message;

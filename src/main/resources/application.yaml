@@ -30,9 +30,18 @@ spring:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+
 jwt:
   secret: ${JWT_SECRET_KEY}
   validity: 3600000
 
 user-service:
   url: http://localhost:8090/api/v1
+
+feign:
+  circuitbreaker:
+    enabled: true

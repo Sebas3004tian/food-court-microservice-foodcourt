@@ -153,4 +153,15 @@ public class ControllerAdvisor {
 
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
     }
+
+    @ExceptionHandler(ExternalServiceException.class)
+    public ResponseEntity<Map<String, String>> handleExternalServiceException(ExternalServiceException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.MICROSERVICE_HAS_PROBLEM.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 }
