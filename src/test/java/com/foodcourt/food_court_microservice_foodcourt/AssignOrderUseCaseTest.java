@@ -36,6 +36,12 @@ class AssignOrderUseCaseTest {
     
     @Mock
     private IEmployeePersistencePort employeePersistencePort;
+
+    @Mock
+    private ISmsClientPort smsClientPort;
+
+    @Mock
+    private IUserExternalPort userExternalPort;
     
     @Mock
     private IJwtServicePort jwtServicePort;
@@ -49,7 +55,7 @@ class AssignOrderUseCaseTest {
         employeePersistencePort = mock(IEmployeePersistencePort.class);
         jwtServicePort = mock(IJwtServicePort.class);
 
-        orderUseCase = new OrderUseCase( orderPersistencePort, orderDishPersistencePort, dishPersistencePort, restaurantPersistencePort, employeePersistencePort, jwtServicePort);
+        orderUseCase = new OrderUseCase( orderPersistencePort, orderDishPersistencePort, dishPersistencePort, restaurantPersistencePort, employeePersistencePort,smsClientPort,userExternalPort, jwtServicePort);
     }
 
     @Test
