@@ -12,6 +12,8 @@ import java.util.List;
 
 public class OrderUseCase implements IOrderServicePort {
 
+    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
+
     private final IOrderPersistencePort orderPersistencePort;
     private final IOrderDishPersistencePort orderDishPersistencePort;
     private final IDishPersistencePort dishPersistencePort;
@@ -159,8 +161,7 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     private String generatePin() {
-        java.security.SecureRandom random = new java.security.SecureRandom();
-        int number = random.nextInt(1000000);
+        int number = RANDOM.nextInt(1000000);
         return String.format("%06d", number);
     }
 
