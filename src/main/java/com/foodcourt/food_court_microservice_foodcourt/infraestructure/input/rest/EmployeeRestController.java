@@ -22,7 +22,7 @@ public class EmployeeRestController {
 
     private final IEmployeeHandler employeeHandler;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PreAuthorize("hasRole('PROPIETARIO')")
     @PostMapping("/")
     @Operation(summary = "Create an employee")
     @ApiResponses(value = {

@@ -32,12 +32,12 @@ public class RestaurantRestController {
             @ApiResponse(responseCode = "403", description = "Access Denied"),
             @ApiResponse(responseCode = "409", description = "Restaurant already exists")
     })
-    public ResponseEntity<Void> createOwner(@Valid @RequestBody CreateRestaurantRequestDto createRestaurantRequestDto){
+    public ResponseEntity<Void> createRestaurant(@Valid @RequestBody CreateRestaurantRequestDto createRestaurantRequestDto){
         restaurantHandler.createRestaurant(createRestaurantRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     @GetMapping("/paged")
     @Operation(summary = "Get all available restaurants ")
     @ApiResponses(value = {

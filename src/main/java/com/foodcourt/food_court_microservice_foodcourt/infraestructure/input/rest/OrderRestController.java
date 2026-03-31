@@ -23,7 +23,7 @@ public class OrderRestController {
 
     private final IOrderHandler orderHandler;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     @PostMapping("/")
     @Operation(summary = "Create an order")
     @ApiResponses(value = {
@@ -37,7 +37,7 @@ public class OrderRestController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @GetMapping("/status/{status}")
     @Operation(summary = "Get orders paged with determinate status")
     @ApiResponses(value = {
@@ -53,7 +53,7 @@ public class OrderRestController {
         return ResponseEntity.ok(orderHandler.getOrderPagedByStatus(status,page, size));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PatchMapping("/{orderId}/assign")
     @Operation(summary = "Assign an Order")
     @ApiResponses(value = {
@@ -67,7 +67,7 @@ public class OrderRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PatchMapping("/{orderId}/ready")
     @Operation(summary = "Mark an Order as READY")
     @ApiResponses(value = {
@@ -80,7 +80,7 @@ public class OrderRestController {
         return ResponseEntity.ok(orderHandler.markOrderAsReady(orderId));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PatchMapping("/{orderId}/delivered")
     @Operation(summary = "Mark an Order as DELIVERED")
     @ApiResponses(value = {

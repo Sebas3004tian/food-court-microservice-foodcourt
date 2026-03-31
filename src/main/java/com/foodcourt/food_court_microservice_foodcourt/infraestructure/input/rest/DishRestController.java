@@ -24,7 +24,7 @@ public class DishRestController {
 
     private final IDishHandler dishHandler;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PreAuthorize("hasRole('PROPIETARIO')")
     @PostMapping("/")
     @Operation(summary = "Create an dish")
     @ApiResponses(value = {
@@ -38,7 +38,7 @@ public class DishRestController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PreAuthorize("hasRole('PROPIETARIO')")
     @PutMapping("/{dishId}")
     @Operation(summary = "Update an dish")
     @ApiResponses(value = {
@@ -51,7 +51,7 @@ public class DishRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PreAuthorize("hasRole('PROPIETARIO')")
     @PatchMapping("/{dishId}/active")
     @Operation(summary = "Enable or disable  dish status")
     @ApiResponses(value = {
@@ -64,7 +64,7 @@ public class DishRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     @GetMapping("/restaurant/{restaurantId}")
     @Operation(summary = "Get all available dishes of a restaurant ")
     @ApiResponses(value = {
