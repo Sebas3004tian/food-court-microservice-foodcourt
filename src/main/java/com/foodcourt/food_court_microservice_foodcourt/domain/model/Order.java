@@ -49,4 +49,8 @@ public class Order {
     public void markAsDelivered() {
         this.status = OrderStatus.ENTREGADO;
     }
+
+    public void markAsCanceled() {
+        this.status = OrderStatus.CANCELADO;
+    }
 }

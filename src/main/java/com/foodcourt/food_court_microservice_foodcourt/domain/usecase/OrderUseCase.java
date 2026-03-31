@@ -61,6 +61,25 @@ public class OrderUseCase implements IOrderServicePort {
         return "Order marked as ready and SMS sent successfully: " + smsResponse;
     }
 
+    private String sendCanceledOrderSms(Long clientId){
+        String phoneNumber = userServicePort.getPhone(clientId);
+
+        if (phoneNumber == null) {
+            return "SMS failed  (user service error)";
+        }
+
+        String smsResponse = smsServicePort.sendSms(
+                phoneNumber,
+                "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse"
+        );
+
+        if (smsResponse == null) {
+            return "SMS failed SMS failed (sms service error)";
+        }
+
+        return smsResponse;
+    }
+
 
     @Override
     public void createOrder(Long clientId, Order order, List<OrderDish> orderDishList) {
@@ -124,11 +143,25 @@ public class OrderUseCase implements IOrderServicePort {
         OrderValidator.validateOrderStatus(order, OrderStatus.EN_PREPARACION);
         OrderValidator.validateAssignedEmployee(order, employee);
 
-        order.markAsReady();
-        orderPersistencePort.updateOrder(order);
+
         String pin = order.getSecurityPin();
 
         return sendReadyOrderSms(order.getClientId(), pin);
+    }
+
+    @Override
+    public String markOrderAsCanceled(Long clientId, Long orderId) {
+        Order order = getOrder(orderId);
+
+        OrderValidator.validateSameClient(clientId, order);
+
+        if(order.getStatus() != OrderStatus.PENDIENTE) {
+            return  sendCanceledOrderSms(clientId);
+        } else {
+            order.markAsCanceled();
+            orderPersistencePort.updateOrder(order);
+            return  "Orden cancelada";
+        }
     }
 
     @Override

@@ -95,4 +95,17 @@ public class OrderRestController {
         orderHandler.markOrderAsDelivered(orderId, pin);
         return ResponseEntity.ok().build();
     }
+
+    @PreAuthorize("hasRole('CLIENTE')")
+    @PatchMapping("/{orderId}/canceled")
+    @Operation(summary = "Mark an Order as CANCELED")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Status changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with mark as canceled the order")
+    })
+    public ResponseEntity<String> markOrderAsCanceled(@PathVariable Long orderId){
+        return ResponseEntity.ok(orderHandler.markOrderAsCanceled(orderId));
+    }
 }
