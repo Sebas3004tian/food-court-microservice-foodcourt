@@ -15,10 +15,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -39,6 +36,7 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
     public boolean existsByClientIdAndStatusIn(Long clientId, List<OrderStatus> statusList) {
         return orderRepository.existsByClientIdAndStatusIn(clientId, statusList);
     }
+
     @Override
     public Page<Order> findByRestaurantIdAndStatusPaged(Long restaurantId, OrderStatus status, int page, int size) {
 
@@ -51,28 +49,29 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
             throw new OrderNotFoundException("");
         }
 
-        List<Long> orderIds = orderEntityPage.getContent()
-                .stream()
-                .map(OrderEntity::getId)
-                .toList();
+        List<OrderEntity> orders = orderEntityPage.getContent();
 
-        List<OrderDishEntity> orderDishEntityList =
-                orderDishRepository.findByOrderIdsWithDish(orderIds);
+        List<Long> orderIds = new ArrayList<>(orders.size());
+        Map<Long, OrderEntity> orderMap = new HashMap<>(orders.size());
 
-        Map<Long, List<OrderDishEntity>> dishesByOrderId = orderDishEntityList.stream()
-                .collect(Collectors.groupingBy(od -> od.getOrder().getId()));
-
-        for (OrderEntity orderEntity : orderEntityPage.getContent()) {
-            List<OrderDishEntity> dishes =
-                    dishesByOrderId.getOrDefault(orderEntity.getId(), new ArrayList<>());
-            orderEntity.setOrderDishes(dishes);
+        for (OrderEntity order : orders) {
+            orderIds.add(order.getId());
+            order.setOrderDishes(new ArrayList<>());
+            orderMap.put(order.getId(), order);
         }
 
-        List<Order> orderList =
-                orderEntityMapper.toOrderList(orderEntityPage.getContent());
+        List<OrderDishEntity> orderDishes =
+                orderDishRepository.findByOrderIdsWithDish(orderIds);
+
+        for (OrderDishEntity od : orderDishes) {
+            OrderEntity order = orderMap.get(od.getOrder().getId());
+            if (order != null) {
+                order.getOrderDishes().add(od);
+            }
+        }
 
         return new PageImpl<>(
-                orderList,
+                orderEntityMapper.toOrderList(orders),
                 orderEntityPage.getPageable(),
                 orderEntityPage.getTotalElements()
         );
