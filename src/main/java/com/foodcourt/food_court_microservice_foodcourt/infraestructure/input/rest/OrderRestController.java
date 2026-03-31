@@ -68,14 +68,30 @@ public class OrderRestController {
 
     @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
     @PatchMapping("/{orderId}/ready")
-    @Operation(summary = "aaaa")
+    @Operation(summary = "Mark an Order as READY")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "aaa"),
-            @ApiResponse(responseCode = "400", description = "aa"),
-            @ApiResponse(responseCode = "403", description = "aaa"),
-            @ApiResponse(responseCode = "409", description = "aaa")
+            @ApiResponse(responseCode = "200", description = "Status changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with mark as ready the order")
     })
     public ResponseEntity<String> markOrderAsReady(@PathVariable Long orderId){
         return ResponseEntity.ok(orderHandler.markOrderAsReady(orderId));
+    }
+
+    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PatchMapping("/{orderId}/delivered")
+    @Operation(summary = "Mark an Order as DELIVERED")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Status changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with mark as delivered the order")
+    })
+    public ResponseEntity<String> markOrderAsDelivered(@PathVariable Long orderId,
+           @RequestParam() String pin
+    ){
+        orderHandler.markOrderAsDelivered(orderId, pin);
+        return ResponseEntity.ok().build();
     }
 }

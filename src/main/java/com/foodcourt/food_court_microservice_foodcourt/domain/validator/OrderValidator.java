@@ -40,4 +40,10 @@ public class OrderValidator {
             throw new ClientHasActiveOrderException("Client cannot create a new order while having an active order");
         }
     }
+
+    public static void validateSecurityPin(Order order, String pin) {
+        if (!order.getSecurityPin().equals(pin)) {
+            throw new UnauthorizedException("Please check the pin, because its not the correct");
+        }
+    }
 }

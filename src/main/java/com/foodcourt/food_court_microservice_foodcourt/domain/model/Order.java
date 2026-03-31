@@ -37,14 +37,16 @@ public class Order {
         return order;
     }
 
-    public String markAsReady() {
-        String pin =generatePin();
+    public void markAsReady() {
         this.status = OrderStatus.LISTO;
         this.securityPin = generatePin();
-        return pin;
     }
 
     private static String generatePin() {
         return String.format("%06d", RANDOM.nextInt(1000000));
+    }
+
+    public void markAsDelivered() {
+        this.status = OrderStatus.ENTREGADO;
     }
 }
