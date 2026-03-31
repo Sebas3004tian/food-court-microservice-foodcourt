@@ -12,6 +12,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.ICategoryPersi
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.DishValidator;
+import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -61,7 +62,7 @@ public class DishUseCase implements IDishServicePort {
     }
 
     @Override
-    public List<Dish> getDishesPagedByRestaurant(Long restaurantId, Long categoryId, int page, int size) {
+    public Page<Dish> getDishesPagedByRestaurant(Long restaurantId, Long categoryId, int page, int size) {
 
         DishValidator.validatePaginationParams(page, size);
 

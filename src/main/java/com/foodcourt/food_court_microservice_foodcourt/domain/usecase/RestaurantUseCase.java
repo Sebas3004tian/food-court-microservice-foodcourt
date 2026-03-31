@@ -5,8 +5,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.RestaurantValidator;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public class RestaurantUseCase  implements IRestaurantServicePort {
 
@@ -40,7 +39,7 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
     }
 
     @Override
-    public List<Restaurant> getAllPagedRestaurants(int page, int size) {
+    public Page<Restaurant> getAllPagedRestaurants(int page, int size) {
         RestaurantValidator.validatePaginationParams(page, size);
 
         return restaurantPersistencePort.findAllPaged(page, size);

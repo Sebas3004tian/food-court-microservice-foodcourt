@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository;
 
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.DishEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -17,7 +18,7 @@ public interface IDishRepository extends JpaRepository<DishEntity, Long> {
     WHERE d.restaurant.id = :restaurantId
     AND d.active = true
     """)
-    List<DishEntity> findByRestaurant(Long restaurantId, Pageable pageable);
+    Page<DishEntity> findByRestaurant(Long restaurantId, Pageable pageable);
 
     @Query("""
     SELECT d FROM DishEntity d
@@ -25,5 +26,5 @@ public interface IDishRepository extends JpaRepository<DishEntity, Long> {
     AND d.category.id = :categoryId
     AND d.active = true
     """)
-    List<DishEntity> findByRestaurantAndCategoryPaged(Long restaurantId, Long categoryId, Pageable pageable);
+    Page<DishEntity> findByRestaurantAndCategoryPaged(Long restaurantId, Long categoryId, Pageable pageable);
 }

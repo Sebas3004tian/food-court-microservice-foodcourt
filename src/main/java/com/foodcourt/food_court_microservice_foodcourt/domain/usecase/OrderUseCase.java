@@ -7,6 +7,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.OrderValidator;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -80,7 +81,7 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public List<Order> getOrderPagedByStatus(Long userId,String status, int page, int size) {
+    public Page<Order> getOrderPagedByStatus(Long userId, String status, int page, int size) {
         OrderValidator.validatePaginationParams(page, size);
 
         Employee employee = getAuthenticatedEmployee(userId);

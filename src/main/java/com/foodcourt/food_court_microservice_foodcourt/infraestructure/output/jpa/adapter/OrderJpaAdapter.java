@@ -10,12 +10,16 @@ import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jp
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IOrderDishRepository;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IOrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -35,41 +39,43 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
     public boolean existsByClientIdAndStatusIn(Long clientId, List<OrderStatus> statusList) {
         return orderRepository.existsByClientIdAndStatusIn(clientId, statusList);
     }
-
     @Override
-    public List<Order> findByRestaurantIdAndStatusPaged(Long restaurantId, OrderStatus status, int page, int size) {
+    public Page<Order> findByRestaurantIdAndStatusPaged(Long restaurantId, OrderStatus status, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        List<OrderEntity> orderEntityList =
+        Page<OrderEntity> orderEntityPage =
                 orderRepository.findByRestaurantIdAndStatus(restaurantId, status, pageable);
 
-        if (orderEntityList.isEmpty()) {
+        if (orderEntityPage.isEmpty()) {
             throw new OrderNotFoundException("");
         }
 
-        List<Long> orderIds = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList) {
-            orderIds.add(orderEntity.getId());
-        }
+        List<Long> orderIds = orderEntityPage.getContent()
+                .stream()
+                .map(OrderEntity::getId)
+                .toList();
 
         List<OrderDishEntity> orderDishEntityList =
                 orderDishRepository.findByOrderIdsWithDish(orderIds);
 
-        for (OrderEntity orderEntity : orderEntityList) {
+        Map<Long, List<OrderDishEntity>> dishesByOrderId = orderDishEntityList.stream()
+                .collect(Collectors.groupingBy(od -> od.getOrder().getId()));
 
-            List<OrderDishEntity> dishesForOrder = new ArrayList<>();
-
-            for (OrderDishEntity orderDishEntity : orderDishEntityList) {
-                if (orderDishEntity.getOrder().getId().equals(orderEntity.getId())) {
-                    dishesForOrder.add(orderDishEntity);
-                }
-            }
-
-            orderEntity.setOrderDishes(dishesForOrder);
+        for (OrderEntity orderEntity : orderEntityPage.getContent()) {
+            List<OrderDishEntity> dishes =
+                    dishesByOrderId.getOrDefault(orderEntity.getId(), new ArrayList<>());
+            orderEntity.setOrderDishes(dishes);
         }
 
-        return orderEntityMapper.toOrderList(orderEntityList);
+        List<Order> orderList =
+                orderEntityMapper.toOrderList(orderEntityPage.getContent());
+
+        return new PageImpl<>(
+                orderList,
+                orderEntityPage.getPageable(),
+                orderEntityPage.getTotalElements()
+        );
     }
 
     @Override

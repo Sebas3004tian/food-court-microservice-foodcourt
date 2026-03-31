@@ -3,6 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.re
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.DishResponseDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.PageResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IDishHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -71,7 +72,7 @@ public class DishRestController {
             @ApiResponse(responseCode = "403", description = "Access Denied"),
             @ApiResponse(responseCode = "409", description = "There are no dishes created")
     })
-    public ResponseEntity<List<DishResponseDto>> getAllPagedRestaurants(
+    public ResponseEntity<PageResponseDto<DishResponseDto>> getAllPagedRestaurants(
             @PathVariable Long restaurantId,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "0") int page,

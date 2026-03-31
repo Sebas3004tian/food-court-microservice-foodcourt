@@ -7,6 +7,8 @@ import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jp
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IDishEntityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IDishRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
@@ -43,32 +45,44 @@ public class DishJpaAdapter implements IDishPersistencePort {
     }
 
     @Override
-    public List<Dish> findByRestaurantPaged(Long restaurantId, int page, int size) {
+    public Page<Dish> findByRestaurantPaged(Long restaurantId, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        List<DishEntity> dishEntityList = dishRepository.findByRestaurant(restaurantId, pageable);
+        Page<DishEntity> dishEntityPage = dishRepository.findByRestaurant(restaurantId, pageable);
 
-        if (dishEntityList.isEmpty()) {
+        if (dishEntityPage.isEmpty()) {
             throw new DishNotFoundException("");
         }
 
-        return dishEntityMapper.toDishList(dishEntityList);
+        List<Dish> dishList = dishEntityMapper.toDishList(dishEntityPage.getContent());
+
+        return new PageImpl<>(
+                dishList,
+                dishEntityPage.getPageable(),
+                dishEntityPage.getTotalElements()
+        );
     }
 
     @Override
-    public List<Dish> findByRestaurantAndCategoryPaged(Long restaurantId, Long categoryId, int page, int size) {
+    public Page<Dish> findByRestaurantAndCategoryPaged(Long restaurantId, Long categoryId, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        List<DishEntity> dishEntityList =
+        Page<DishEntity> dishEntityPage =
                 dishRepository.findByRestaurantAndCategoryPaged(restaurantId, categoryId, pageable);
 
-        if (dishEntityList.isEmpty()) {
+        if (dishEntityPage.isEmpty()) {
             throw new DishNotFoundException("");
         }
 
-        return dishEntityMapper.toDishList(dishEntityList);
+        List<Dish> dishList = dishEntityMapper.toDishList(dishEntityPage.getContent());
+
+        return new PageImpl<>(
+                dishList,
+                dishEntityPage.getPageable(),
+                dishEntityPage.getTotalElements()
+        );
     }
 
     private Dish saveDish(Dish dish) {
