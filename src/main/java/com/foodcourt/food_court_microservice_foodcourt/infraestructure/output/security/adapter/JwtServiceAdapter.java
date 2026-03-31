@@ -1,6 +1,6 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.security.adapter;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;

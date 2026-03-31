@@ -5,7 +5,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IEmployeePersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IOrderPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.OrderNotFoundException;

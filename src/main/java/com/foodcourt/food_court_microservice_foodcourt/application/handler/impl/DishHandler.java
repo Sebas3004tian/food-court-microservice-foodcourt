@@ -8,7 +8,7 @@ import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IDishR
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IDishResponseMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

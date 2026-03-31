@@ -1,9 +1,6 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.configuration;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IEmployeeServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.EmployeeUseCase;
@@ -77,12 +74,12 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public IUserExternalPort userExternalPort(){
+    public IUserServicePort userServicePort(){
         return new UserFeignAdapter(userFeignClient);
     }
 
     @Bean
-    public ISmsClientPort smsClientPort(){
+    public ISmsServicePort smsServicePort(){
         return new SmsFeignAdapter(smsFeignClient);
     }
 
@@ -90,7 +87,7 @@ public class BeanConfiguration {
     public IRestaurantServicePort restaurantServicePort(){
         return new RestaurantUseCase(
                 restaurantPersistencePort(),
-                userExternalPort()
+                userServicePort()
         );
     }
 
@@ -111,8 +108,8 @@ public class BeanConfiguration {
                 dishPersistencePort(),
                 restaurantPersistencePort(),
                 employeePersistencePort(),
-                smsClientPort(),
-                userExternalPort()
+                smsServicePort(),
+                userServicePort()
         );
     }
 
@@ -121,7 +118,7 @@ public class BeanConfiguration {
         return new EmployeeUseCase(
                 employeePersistencePort(),
                 restaurantPersistencePort(),
-                userExternalPort()
+                userServicePort()
 
         );
     }

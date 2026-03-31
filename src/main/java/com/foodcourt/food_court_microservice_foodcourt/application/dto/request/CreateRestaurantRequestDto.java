@@ -9,6 +9,7 @@ import lombok.Setter;
 public class CreateRestaurantRequestDto {
 
     @NotBlank(message="The name cannot be empty")
+    @Pattern(regexp = "^(?!\\d+$)[a-zA-Z0-9 ]+$", message = "The name cannot be only numbers")
     private String name;
 
     @NotNull(message="The nit cannot be empty")

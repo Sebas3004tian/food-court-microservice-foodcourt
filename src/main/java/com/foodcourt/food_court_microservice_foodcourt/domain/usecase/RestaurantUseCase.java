@@ -3,7 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.RestaurantValidator;
 
 import java.util.List;
@@ -11,12 +11,12 @@ import java.util.List;
 public class RestaurantUseCase  implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserExternalPort userExternalPort;
+    private final IUserServicePort userServicePort;
 
 
-    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IUserExternalPort userExternalPort) {
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IUserServicePort userServicePort) {
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userExternalPort = userExternalPort;
+        this.userServicePort = userServicePort;
     }
 
     @Override
@@ -34,7 +34,7 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
                 restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()
         );
 
-        RestaurantValidator.validateUserIsOwner(userExternalPort.isUserOwner(restaurant.getOwnerId()));
+        RestaurantValidator.validateUserIsOwner(userServicePort.isUserOwner(restaurant.getOwnerId()));
 
         restaurantPersistencePort.createRestaurant(restaurant);
     }

@@ -5,7 +5,7 @@ import com.foodcourt.food_court_microservice_foodcourt.application.handler.IEmpl
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IEmployeeRequestMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IEmployeeServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

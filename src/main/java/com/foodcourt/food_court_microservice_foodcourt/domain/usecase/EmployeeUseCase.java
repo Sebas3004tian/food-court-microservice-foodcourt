@@ -6,7 +6,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IEmployeePersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.EmployeeValidator;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 
@@ -14,19 +14,19 @@ public class EmployeeUseCase implements IEmployeeServicePort {
 
     private final IEmployeePersistencePort employeePersistencePort;
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserExternalPort userExternalPort;
+    private final IUserServicePort userServicePort;
 
     public EmployeeUseCase(IEmployeePersistencePort employeePersistencePort,
-                           IRestaurantPersistencePort restaurantPersistencePort, IUserExternalPort userExternalPort) {
+                           IRestaurantPersistencePort restaurantPersistencePort, IUserServicePort userServicePort) {
         this.employeePersistencePort = employeePersistencePort;
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userExternalPort = userExternalPort;
+        this.userServicePort = userServicePort;
     }
 
     @Override
     public void createEmployee(Long ownerId,Employee employee) {
 
-        boolean isEmployee = userExternalPort.isUserEmployee(employee.getUserId());
+        boolean isEmployee = userServicePort.isUserEmployee(employee.getUserId());
 
         if (!isEmployee) {
             throw new InvalidUserRoleException("The user does not exist or does not have the role of EMPLEADO");

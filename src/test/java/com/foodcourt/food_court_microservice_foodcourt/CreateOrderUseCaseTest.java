@@ -1,5 +1,6 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;

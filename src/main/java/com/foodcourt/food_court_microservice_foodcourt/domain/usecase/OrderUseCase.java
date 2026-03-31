@@ -1,6 +1,8 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
@@ -16,17 +18,17 @@ public class OrderUseCase implements IOrderServicePort {
     private final IRestaurantPersistencePort restaurantPersistencePort;
     private final IEmployeePersistencePort employeePersistencePort;
 
-    private final ISmsClientPort smsClientPort;
-    private final IUserExternalPort userExternalPort;
+    private final ISmsServicePort smsServicePort;
+    private final IUserServicePort userServicePort;
 
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsClientPort smsClientPort, IUserExternalPort userExternalPort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsServicePort smsServicePort, IUserServicePort userServicePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.restaurantPersistencePort = restaurantPersistencePort;
         this.employeePersistencePort = employeePersistencePort;
-        this.smsClientPort = smsClientPort;
-        this.userExternalPort = userExternalPort;
+        this.smsServicePort = smsServicePort;
+        this.userServicePort = userServicePort;
     }
 
     private Employee getAuthenticatedEmployee(Long userId) {
@@ -40,13 +42,13 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     private String sendReadyOrderSms(Long userId, String pin) {
-        String phoneNumber = userExternalPort.getPhone(userId);
+        String phoneNumber = userServicePort.getPhone(userId);
 
         if (phoneNumber == null) {
             return "Order marked as ready but SMS failed  (user service error)";
         }
 
-        String smsResponse = smsClientPort.sendSms(
+        String smsResponse = smsServicePort.sendSms(
                 phoneNumber,
                 "Tu pedido está listo. PIN: " + pin
         );

@@ -3,7 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UserServiceException;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +20,7 @@ import static org.mockito.Mockito.*;
 class CreateRestaurantUseCaseTest {
 
     @Mock
-    private IUserExternalPort userExternalPort;
+    private IUserServicePort userServicePort;
 
     @Mock
     private IRestaurantPersistencePort restaurantPersistencePort;
@@ -48,7 +48,7 @@ class CreateRestaurantUseCaseTest {
 
         Long ownerId = 11L;
 
-        when(userExternalPort.isUserOwner(ownerId))
+        when(userServicePort.isUserOwner(ownerId))
                 .thenReturn(true);
 
         restaurantUseCase.createRestaurant(restaurant);
@@ -61,7 +61,7 @@ class CreateRestaurantUseCaseTest {
 
         Long ownerId = 11L;
 
-        when(userExternalPort.isUserOwner(ownerId))
+        when(userServicePort.isUserOwner(ownerId))
                 .thenReturn(false);
 
         assertThrows(InvalidUserRoleException.class, () ->
@@ -76,7 +76,7 @@ class CreateRestaurantUseCaseTest {
 
         Long ownerId = 11L;
 
-        when(userExternalPort.isUserOwner(ownerId))
+        when(userServicePort.isUserOwner(ownerId))
                 .thenThrow(new UserServiceException("User not found", 404));
 
         assertThrows(UserServiceException.class, () ->

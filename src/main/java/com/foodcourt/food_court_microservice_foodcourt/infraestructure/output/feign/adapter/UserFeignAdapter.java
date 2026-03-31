@@ -1,11 +1,11 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.IUserFeignClient;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class UserFeignAdapter implements IUserExternalPort {
+public class UserFeignAdapter implements IUserServicePort {
 
     private final IUserFeignClient userFeignClient;
 

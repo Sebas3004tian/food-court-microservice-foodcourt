@@ -1,5 +1,8 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.NotAssignedException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
@@ -31,9 +34,9 @@ class MarkAsReadyOrderUseCaseTest {
     @Mock
     private IEmployeePersistencePort employeePersistencePort;
     @Mock
-    private ISmsClientPort smsClientPort;
+    private ISmsServicePort smsServicePort;
     @Mock
-    private IUserExternalPort userExternalPort;
+    private IUserServicePort userServicePort;
     @Mock
     private IJwtServicePort jwtServicePort;
 
@@ -66,8 +69,8 @@ class MarkAsReadyOrderUseCaseTest {
 
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-        when(userExternalPort.getPhone(1L)).thenReturn("+573001234567");
-        when(smsClientPort.sendSms(anyString(), anyString())).thenReturn("SMS SENT");
+        when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
+        when(smsServicePort.sendSms(anyString(), anyString())).thenReturn("SMS SENT");
 
         String response = orderUseCase.markOrderAsReady(1L,100L);
 
@@ -75,7 +78,7 @@ class MarkAsReadyOrderUseCaseTest {
         assertNotNull(order.getSecurityPin());
 
         verify(orderPersistencePort).updateOrder(order);
-        verify(smsClientPort).sendSms(anyString(), contains("PIN"));
+        verify(smsServicePort).sendSms(anyString(), contains("PIN"));
 
         assertTrue(response.contains("SMS sent successfully"));
     }
@@ -119,8 +122,8 @@ class MarkAsReadyOrderUseCaseTest {
     void shouldReturnMessageWhenSmsFails() {
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-        when(userExternalPort.getPhone(1L)).thenReturn("+573001234567");
-        when(smsClientPort.sendSms(anyString(), anyString())).thenReturn(null);
+        when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
+        when(smsServicePort.sendSms(anyString(), anyString())).thenReturn(null);
 
         String response = orderUseCase.markOrderAsReady(1L,100L);
 
