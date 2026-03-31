@@ -13,6 +13,12 @@ public class OrderValidator {
 
     private OrderValidator() {}
 
+    public static void validateSameClient(Long clientId, Order order) {
+        if (!order.getClientId().equals(clientId)) {
+            throw new UnauthorizedException();
+        }
+    }
+
     public static void validateSameRestaurant(Employee employee, Order order) {
         if (!order.getRestaurant().getId().equals(employee.getRestaurant().getId())) {
             throw new UnauthorizedException();
