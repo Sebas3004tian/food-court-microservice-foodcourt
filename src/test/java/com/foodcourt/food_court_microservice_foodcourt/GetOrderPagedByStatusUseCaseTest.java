@@ -67,8 +67,6 @@ class GetOrderPagedByStatusUseCaseTest {
 
         List<Order> expectedOrders = List.of(order);
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
-
         when(employeePersistencePort.findOneByUserId(userId))
                 .thenReturn(Optional.of(employee));
 
@@ -79,7 +77,7 @@ class GetOrderPagedByStatusUseCaseTest {
                 size
         )).thenReturn(expectedOrders);
 
-        List<Order> result = orderUseCase.getOrderPagedByStatus(status, page, size);
+        List<Order> result = orderUseCase.getOrderPagedByStatus(userId,status, page, size);
 
         assertNotNull(result);
         assertEquals(1, result.size());
@@ -101,8 +99,6 @@ class GetOrderPagedByStatusUseCaseTest {
 
         Long userId = 10L;
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
-
         when(employeePersistencePort.findOneByUserId(userId))
                 .thenReturn(Optional.of(employee));
 
@@ -114,7 +110,7 @@ class GetOrderPagedByStatusUseCaseTest {
         )).thenThrow(new NoDataFoundException("No orders found"));
 
         assertThrows(NoDataFoundException.class, () ->
-                orderUseCase.getOrderPagedByStatus(status, page, size)
+                orderUseCase.getOrderPagedByStatus(userId,status, page, size)
         );
 
         verify(orderPersistencePort).findByRestaurantIdAndStatusPaged(

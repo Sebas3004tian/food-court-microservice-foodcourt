@@ -71,7 +71,6 @@ public class BeanConfiguration {
         return new EmployeeJpaAdapter(employeeRepository,employeeEntityMapper);
     }
 
-
     @Bean
     public IJwtServicePort jwtServicePort(){
         return new JwtServiceAdapter();
@@ -100,8 +99,7 @@ public class BeanConfiguration {
         return new DishUseCase(
                 dishPersistencePort(),
                 restaurantPersistencePort(),
-                categoryPersistencePort(),
-                jwtServicePort()
+                categoryPersistencePort()
         );
     }
 
@@ -114,8 +112,7 @@ public class BeanConfiguration {
                 restaurantPersistencePort(),
                 employeePersistencePort(),
                 smsClientPort(),
-                userExternalPort(),
-                jwtServicePort()
+                userExternalPort()
         );
     }
 
@@ -124,7 +121,6 @@ public class BeanConfiguration {
         return new EmployeeUseCase(
                 employeePersistencePort(),
                 restaurantPersistencePort(),
-                jwtServicePort(),
                 userExternalPort()
 
         );

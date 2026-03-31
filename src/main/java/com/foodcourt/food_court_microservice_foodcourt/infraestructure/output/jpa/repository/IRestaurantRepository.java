@@ -7,6 +7,7 @@ import java.util.Optional;
 
 public interface IRestaurantRepository extends JpaRepository<RestaurantEntity, Long> {
 
+    Optional<RestaurantEntity> findOneByName(String name);
     Optional<RestaurantEntity> findOneByNit(Long nit);
     Optional<RestaurantEntity> findOneByPhoneNumberRestaurant(String phoneNumberRestaurant);
 

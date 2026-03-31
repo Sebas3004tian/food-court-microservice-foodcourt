@@ -1,18 +1,15 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
+import com.foodcourt.food_court_microservice_foodcourt.domain.validator.OrderValidator;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 
 import java.util.List;
 
 public class OrderUseCase implements IOrderServicePort {
-
-    private static final java.security.SecureRandom RANDOM = new java.security.SecureRandom();
 
     private final IOrderPersistencePort orderPersistencePort;
     private final IOrderDishPersistencePort orderDishPersistencePort;
@@ -23,9 +20,7 @@ public class OrderUseCase implements IOrderServicePort {
     private final ISmsClientPort smsClientPort;
     private final IUserExternalPort userExternalPort;
 
-    private final IJwtServicePort jwtServicePort;
-
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsClientPort smsClientPort, IUserExternalPort userExternalPort, IJwtServicePort jwtServicePort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsClientPort smsClientPort, IUserExternalPort userExternalPort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
@@ -33,11 +28,9 @@ public class OrderUseCase implements IOrderServicePort {
         this.employeePersistencePort = employeePersistencePort;
         this.smsClientPort = smsClientPort;
         this.userExternalPort = userExternalPort;
-        this.jwtServicePort = jwtServicePort;
     }
 
-    private Employee getAuthenticatedEmployee() {
-        Long userId = jwtServicePort.getAuthenticatedUserId();
+    private Employee getAuthenticatedEmployee(Long userId) {
         return employeePersistencePort.findOneByUserId(userId)
                 .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id " + userId));
     }
@@ -47,24 +40,6 @@ public class OrderUseCase implements IOrderServicePort {
                 .orElseThrow(() -> new NoDataFoundException("Not found the Order with id " + orderId));
     }
 
-    private void validateSameRestaurant(Employee employee, Order order) {
-        if (!order.getRestaurant().getId().equals(employee.getRestaurant().getId())) {
-            throw new UnauthorizedException("You are not an employee of the restaurant order");
-        }
-    }
-
-    private void validateOrderStatus(Order order, OrderStatus expectedStatus, String message) {
-        if (order.getStatus() != expectedStatus) {
-            throw new InvalidOrderStatusException(message);
-        }
-    }
-
-    private void validateAssignedEmployee(Order order, Employee employee) {
-        if (!order.getEmployeeId().equals(employee.getId())) {
-            throw new UnauthorizedException("You are not assigned to this order");
-        }
-    }
-
     private String sendReadyOrderSms(Long userId, String pin) {
         String phoneNumber = userExternalPort.getPhone(userId);
 
@@ -72,46 +47,42 @@ public class OrderUseCase implements IOrderServicePort {
             return "Order marked as ready but SMS failed  (user service error)";
         }
 
-        String response = smsClientPort.sendSms(
+        String smsResponse = smsClientPort.sendSms(
                 phoneNumber,
                 "Tu pedido está listo. PIN: " + pin
         );
 
-        if (response == null) {
+        if (smsResponse == null) {
             return "Order marked as ready but SMS failed (sms service error)";
         }
 
-        return "Order marked as ready and SMS sent successfully: " + response;
+        return "Order marked as ready and SMS sent successfully: " + smsResponse;
     }
 
 
     @Override
-    public void createOrder(Order order, List<OrderDish> orderDishList) {
-        Long clientId = jwtServicePort.getAuthenticatedUserId();
+    public void createOrder(Long clientId, Order order, List<OrderDish> orderDishList) {
 
-        validateClientHasNoActiveOrders(clientId);
+        boolean hasActiveOrders = orderPersistencePort.existsByClientIdAndStatusIn(clientId,
+                List.of(OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO));
+        OrderValidator.validateClientHasNoActiveOrders(hasActiveOrders);
 
         Long restaurantId = order.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
                 .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+restaurantId));
 
-        Order orderToSave = Order.createPendingOrder(order,clientId, restaurant, "Pin ultra secret");
-
+        Order orderToSave = Order.createPendingOrder(order, clientId, restaurant);
         Order persistedOrder = orderPersistencePort.createOrder(orderToSave);
 
         List<OrderDish> preparedDishes = prepareDishes(restaurantId, orderDishList);
-
-        orderDishPersistencePort.createOrderDishList(preparedDishes,persistedOrder);
+        orderDishPersistencePort.createOrderDishList(preparedDishes, persistedOrder);
     }
 
     @Override
-    public List<Order> getOrderPagedByStatus(String status, int page, int size) {
+    public List<Order> getOrderPagedByStatus(Long userId,String status, int page, int size) {
+        OrderValidator.validatePaginationParams(page, size);
 
-        if (page < 0 || size <= 0) {
-            throw new IllegalArgumentException("Invalid pagination params");
-        }
-
-        Employee employee = getAuthenticatedEmployee();
+        Employee employee = getAuthenticatedEmployee(userId);
 
         OrderStatus orderStatus;
         try {
@@ -129,12 +100,12 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public void assignOrder(Long orderId) {
-        Employee employee = getAuthenticatedEmployee();
+    public void assignOrder(Long userId,Long orderId) {
+        Employee employee = getAuthenticatedEmployee(userId);
         Order order = getOrderOrThrow(orderId);
 
-        validateSameRestaurant(employee, order);
-        validateOrderStatus(order, OrderStatus.PENDIENTE, "The order must be PENDING");
+        OrderValidator.validateSameRestaurant(employee, order);
+        OrderValidator.validateOrderStatus(order, OrderStatus.PENDIENTE);
 
         order.setEmployeeId(employee.getId());
         order.setStatus(OrderStatus.EN_PREPARACION);
@@ -143,35 +114,18 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public String markOrderAsReady(Long orderId) {
-        Employee employee = getAuthenticatedEmployee();
+    public String markOrderAsReady(Long userId,Long orderId) {
+        Employee employee = getAuthenticatedEmployee(userId);
         Order order = getOrderOrThrow(orderId);
 
-        validateSameRestaurant(employee, order);
-        validateOrderStatus(order, OrderStatus.EN_PREPARACION, "The order must be IN_PREPARATION");
-        validateAssignedEmployee(order, employee);
+        OrderValidator.validateSameRestaurant(employee, order);
+        OrderValidator.validateOrderStatus(order, OrderStatus.EN_PREPARACION);
+        OrderValidator.validateAssignedEmployee(order, employee);
 
-        String pin = generatePin();
-
-        order.setStatus(OrderStatus.LISTO);
-        order.setSecurityPin(pin);
+        String pin = order.markAsReady();
         orderPersistencePort.updateOrder(order);
 
         return sendReadyOrderSms(order.getClientId(), pin);
-    }
-
-    private String generatePin() {
-        int number = RANDOM.nextInt(1000000);
-        return String.format("%06d", number);
-    }
-
-    private void validateClientHasNoActiveOrders(Long clientId){
-        boolean hasActiveOrders = orderPersistencePort.existsByClientIdAndStatusIn(clientId,
-                List.of(OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO));
-
-        if (hasActiveOrders) {
-            throw new ClientHasActiveOrderException("Client cannot create a new order while having an active order");
-        }
     }
 
     private List<OrderDish> prepareDishes(Long restaurantId, List<OrderDish> orderDishList) {

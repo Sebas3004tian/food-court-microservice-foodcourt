@@ -74,16 +74,13 @@ class CreateDishUseCaseTest {
 
         Long ownerId = 10L;
 
-        when(jwtServicePort.getAuthenticatedUserId())
-                .thenReturn(ownerId);
-
         when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
         when(categoryPersistencePort.findOneById(category.getId()))
                 .thenReturn(Optional.of(category));
 
-        dishUseCase.createDish(dish);
+        dishUseCase.createDish(ownerId,dish);
 
         verify(dishPersistencePort).createDish(dish);
     }
@@ -93,9 +90,6 @@ class CreateDishUseCaseTest {
 
         Long otherUserId = 99L;
 
-        when(jwtServicePort.getAuthenticatedUserId())
-                .thenReturn(otherUserId);
-
         when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
@@ -103,7 +97,7 @@ class CreateDishUseCaseTest {
                 .thenReturn(Optional.of(category));
 
         assertThrows(UnauthorizedException.class, () ->
-                dishUseCase.createDish(dish)
+                dishUseCase.createDish(otherUserId,dish)
         );
 
         verify(dishPersistencePort, never()).createDish(any());
@@ -111,6 +105,8 @@ class CreateDishUseCaseTest {
 
     @Test
     void shouldThrowExceptionWhenRestaurantNotFound() {
+
+        Long ownerId = 10L;
 
         Restaurant restaurant = new Restaurant();
         restaurant.setId(1L);
@@ -124,7 +120,7 @@ class CreateDishUseCaseTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () ->
-                dishUseCase.createDish(dish)
+                dishUseCase.createDish(ownerId,dish)
         );
 
         verify(dishPersistencePort, never()).createDish(any());

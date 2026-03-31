@@ -67,10 +67,7 @@ class UpdateDishUseCaseTest {
         when(dishPersistencePort.findOneById(dishId))
                 .thenReturn(Optional.of(dish));
 
-        when(jwtServicePort.getAuthenticatedUserId())
-                .thenReturn(ownerId);
-
-        dishUseCase.updateDish(dishId, newPrice, newDescription);
+        dishUseCase.updateDish(ownerId,dishId, newPrice, newDescription);
 
         assertEquals(newPrice, dish.getPrice());
         assertEquals(newDescription, dish.getDescription());
@@ -86,7 +83,7 @@ class UpdateDishUseCaseTest {
                 .thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () ->
-                dishUseCase.updateDish(dishId, BigDecimal.TEN, "desc")
+                dishUseCase.updateDish(1L,dishId, BigDecimal.TEN, "desc")
         );
 
         verify(dishPersistencePort, never()).updateDish(any());
@@ -95,16 +92,12 @@ class UpdateDishUseCaseTest {
     @Test
     void shouldThrowExceptionWhenUserIsNotOwner() {
         Long dishId = 1L;
-        Long otherUserId = 99L;
 
         when(dishPersistencePort.findOneById(dishId))
                 .thenReturn(Optional.of(dish));
 
-        when(jwtServicePort.getAuthenticatedUserId())
-                .thenReturn(otherUserId);
-
         assertThrows(UnauthorizedException.class, () ->
-                dishUseCase.updateDish(dishId, BigDecimal.TEN, "desc")
+                dishUseCase.updateDish(1L,dishId, BigDecimal.TEN, "desc")
         );
 
         verify(dishPersistencePort, never()).updateDish(any());
