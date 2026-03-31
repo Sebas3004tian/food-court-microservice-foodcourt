@@ -68,8 +68,6 @@ class CreateOrderUseCaseTest {
     @Test
     void shouldCreateOrderSuccessfully() {
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
-
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
@@ -86,7 +84,7 @@ class CreateOrderUseCaseTest {
                     return o;
                 });
 
-        orderUseCase.createOrder(order, List.of(orderDish));
+        orderUseCase.createOrder(1L,order, List.of(orderDish));
 
         verify(orderPersistencePort).createOrder(any(Order.class));
         verify(orderDishPersistencePort).createOrderDishList(anyList(), any());
@@ -94,8 +92,6 @@ class CreateOrderUseCaseTest {
 
     @Test
     void shouldThrowExceptionWhenRestaurantNotFound() {
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
 
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
@@ -106,15 +102,13 @@ class CreateOrderUseCaseTest {
         List<OrderDish> dishes = List.of(orderDish);
 
         assertThrows(NoDataFoundException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+                () -> orderUseCase.createOrder(1L,order, dishes));
 
         verify(orderPersistencePort, never()).createOrder(any());
     }
 
     @Test
     void shouldThrowExceptionWhenDishNotFound() {
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
 
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
@@ -131,13 +125,11 @@ class CreateOrderUseCaseTest {
         List<OrderDish> dishes = List.of(orderDish);
 
         assertThrows(NoDataFoundException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+                () -> orderUseCase.createOrder(1L,order, dishes));
     }
 
     @Test
     void shouldThrowExceptionWhenClientHasActiveOrder() {
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
 
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(true);
@@ -145,15 +137,13 @@ class CreateOrderUseCaseTest {
         List<OrderDish> dishes = List.of(orderDish);
 
         assertThrows(ClientHasActiveOrderException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+                () -> orderUseCase.createOrder(1L,order, dishes));
 
         verify(orderPersistencePort, never()).createOrder(any());
     }
 
     @Test
     void shouldThrowExceptionWhenAmountIsInvalid() {
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
 
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
@@ -166,6 +156,6 @@ class CreateOrderUseCaseTest {
         List<OrderDish> dishes = List.of(orderDish);
 
         assertThrows(IllegalArgumentException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+                () -> orderUseCase.createOrder(1L,order, dishes));
     }
 }

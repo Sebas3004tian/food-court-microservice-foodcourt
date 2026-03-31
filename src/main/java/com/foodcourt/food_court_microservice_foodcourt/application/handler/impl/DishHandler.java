@@ -8,6 +8,7 @@ import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IDishR
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IDishResponseMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,15 +25,20 @@ public class DishHandler implements IDishHandler {
     private final IDishRequestMapper dishRequestMapper;
     private final IDishResponseMapper dishResponseMapper;
 
+    private final IJwtServicePort jwtServicePort;
+
     @Override
     public void createDish(CreateDishRequestDto createDishRequestDto) {
         Dish dish = dishRequestMapper.toDish(createDishRequestDto);
-        dishServicePort.createDish(dish);
+        Long userId = jwtServicePort.getAuthenticatedUserId();
+        dishServicePort.createDish(userId,dish);
     }
 
     @Override
     public void updateDish(Long dishId, UpdateDishRequestDto updateDishRequestDto) {
+        Long userId = jwtServicePort.getAuthenticatedUserId();
         dishServicePort.updateDish(
+                userId,
                 dishId,
                 updateDishRequestDto.getPrice(),
                 updateDishRequestDto.getDescription()
@@ -41,7 +47,8 @@ public class DishHandler implements IDishHandler {
 
     @Override
     public void enableOrDisableDish(Long dishId, boolean active) {
-        dishServicePort.enableOrDisableDish(dishId,active);
+        Long userId = jwtServicePort.getAuthenticatedUserId();
+        dishServicePort.enableOrDisableDish(userId,dishId,active);
     }
 
 

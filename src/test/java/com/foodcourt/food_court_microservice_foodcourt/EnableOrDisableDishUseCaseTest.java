@@ -62,9 +62,8 @@ class EnableOrDisableDishUseCaseTest {
 
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(OWNER_ID);
 
-        dishUseCase.enableOrDisableDish(DISH_ID, true);
+        dishUseCase.enableOrDisableDish(OWNER_ID,DISH_ID, true);
 
         assertTrue(dish.isActive());
         verify(dishPersistencePort).updateDish(dish);
@@ -75,7 +74,7 @@ class EnableOrDisableDishUseCaseTest {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.empty());
 
         assertThrows(NoDataFoundException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+                () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -86,7 +85,7 @@ class EnableOrDisableDishUseCaseTest {
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.empty());
 
         assertThrows(NoDataFoundException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+                () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -95,10 +94,9 @@ class EnableOrDisableDishUseCaseTest {
     void shouldThrowExceptionWhenUserIsNotOwner() {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(999L);
 
         assertThrows(UnauthorizedException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+                () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -109,10 +107,9 @@ class EnableOrDisableDishUseCaseTest {
 
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(OWNER_ID);
 
         assertThrows(DishStatusAlreadySetException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+                () -> dishUseCase.enableOrDisableDish(OWNER_ID,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -123,10 +120,9 @@ class EnableOrDisableDishUseCaseTest {
 
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(OWNER_ID);
 
         assertThrows(DishStatusAlreadySetException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, false));
+                () -> dishUseCase.enableOrDisableDish(OWNER_ID,DISH_ID, false));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }

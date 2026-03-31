@@ -1,11 +1,10 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistsException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.validator.RestaurantValidator;
 
 import java.util.List;
 
@@ -23,28 +22,26 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
     @Override
     public void createRestaurant(Restaurant restaurant){
 
-        if (restaurantPersistencePort.findOneByNit(restaurant.getNit()).isPresent()) {
-            throw new AlreadyExistsException("Restaurant NIT already exists");
-        }
+        RestaurantValidator.validateNameNotExists(
+                restaurantPersistencePort.findOneByName(restaurant.getName()).isPresent()
+        );
 
-        if (restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()) {
-            throw new AlreadyExistsException("Restaurant phone number already exists");
-        }
+        RestaurantValidator.validateNitNotExists(
+                restaurantPersistencePort.findOneByNit(restaurant.getNit()).isPresent()
+        );
 
-        boolean isOwner = userExternalPort.isUserOwner(restaurant.getOwnerId());
-        if (!isOwner) {
-            throw new InvalidUserRoleException("The user does not exist or does not have the role of PROPIETARIO");
-        }
+        RestaurantValidator.validatePhoneNotExists(
+                restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()
+        );
+
+        RestaurantValidator.validateUserIsOwner(userExternalPort.isUserOwner(restaurant.getOwnerId()));
 
         restaurantPersistencePort.createRestaurant(restaurant);
     }
 
     @Override
     public List<Restaurant> getAllPagedRestaurants(int page, int size) {
-
-        if (page < 0 || size <= 0) {
-            throw new IllegalArgumentException("Invalid pagination params");
-        }
+        RestaurantValidator.validatePaginationParams(page, size);
 
         return restaurantPersistencePort.findAllPaged(page, size);
     }

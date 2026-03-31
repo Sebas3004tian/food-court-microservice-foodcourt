@@ -69,13 +69,12 @@ class AssignOrderUseCaseTest {
 
     @Test
     void shouldAssignOrderAndSetStatusInPreparation() {
-        Long userId = 100L;
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
-        when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
+        when(employeePersistencePort.findOneByUserId(employee.getId()))
+                .thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
-        orderUseCase.assignOrder(order.getId());
+        orderUseCase.assignOrder(employee.getId(),order.getId());
 
         assertEquals(employee.getId(), order.getEmployeeId());
         assertEquals(OrderStatus.EN_PREPARACION, order.getStatus());
@@ -92,7 +91,7 @@ class AssignOrderUseCaseTest {
         when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.empty());
 
         Long orderId = order.getId();
-        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(orderId));
+        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(1L,orderId));
     }
 
     @Test
@@ -108,7 +107,7 @@ class AssignOrderUseCaseTest {
         when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
         Long orderId = order.getId();
-        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(orderId));
+        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(1L,orderId));
     }
 
     @Test
@@ -121,6 +120,6 @@ class AssignOrderUseCaseTest {
         when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
         Long orderId = order.getId();
-        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(orderId));
+        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(1L,orderId));
     }
 }

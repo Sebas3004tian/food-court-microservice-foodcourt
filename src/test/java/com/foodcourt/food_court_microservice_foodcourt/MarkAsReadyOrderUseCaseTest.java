@@ -62,13 +62,13 @@ class MarkAsReadyOrderUseCaseTest {
 
     @Test
     void shouldMarkOrderAsReadyAndSendSmsSuccessfully() {
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(1L);
+
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
         when(userExternalPort.getPhone(1L)).thenReturn("+573001234567");
         when(smsClientPort.sendSms(anyString(), anyString())).thenReturn("SMS SENT");
 
-        String response = orderUseCase.markOrderAsReady(100L);
+        String response = orderUseCase.markOrderAsReady(1L,100L);
 
         assertEquals(OrderStatus.LISTO, order.getStatus());
         assertNotNull(order.getSecurityPin());
@@ -85,47 +85,43 @@ class MarkAsReadyOrderUseCaseTest {
         anotherRestaurant.setId(2L);
         order.setRestaurant(anotherRestaurant);
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(1L);
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         assertThrows(UnauthorizedException.class,
-                () -> orderUseCase.markOrderAsReady(100L));
+                () -> orderUseCase.markOrderAsReady(1L,100L));
     }
 
     @Test
     void shouldThrowExceptionWhenStatusIsNotInPreparation() {
         order.setStatus(OrderStatus.PENDIENTE);
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(1L);
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         assertThrows(InvalidOrderStatusException.class,
-                () -> orderUseCase.markOrderAsReady(100L));
+                () -> orderUseCase.markOrderAsReady(1L,100L));
     }
 
     @Test
     void shouldThrowUnauthorizedWhenEmployeeNotAssigned() {
         order.setEmployeeId(999L);
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(1L);
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         assertThrows(UnauthorizedException.class,
-                () -> orderUseCase.markOrderAsReady(100L));
+                () -> orderUseCase.markOrderAsReady(1L,100L));
     }
 
     @Test
     void shouldReturnMessageWhenSmsFails() {
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(1L);
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
         when(userExternalPort.getPhone(1L)).thenReturn("+573001234567");
         when(smsClientPort.sendSms(anyString(), anyString())).thenReturn(null);
 
-        String response = orderUseCase.markOrderAsReady(100L);
+        String response = orderUseCase.markOrderAsReady(1L,100L);
 
         assertEquals(OrderStatus.LISTO, order.getStatus());
         assertTrue(response.contains("failed"));

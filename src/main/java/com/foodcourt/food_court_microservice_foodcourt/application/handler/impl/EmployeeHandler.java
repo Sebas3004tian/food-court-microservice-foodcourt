@@ -5,6 +5,7 @@ import com.foodcourt.food_court_microservice_foodcourt.application.handler.IEmpl
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IEmployeeRequestMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IEmployeeServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,9 +19,12 @@ public class EmployeeHandler implements IEmployeeHandler {
 
     private final IEmployeeRequestMapper employeeRequestMapper;
 
+    private final IJwtServicePort jwtServicePort;
+
     @Override
     public void createEmployee(CreateEmployeeRequestDto employeeRequestDto) {
+        Long ownerId = jwtServicePort.getAuthenticatedUserId();
         Employee employee = employeeRequestMapper.toEmployee(employeeRequestDto);
-        employeeServicePort.createEmployee(employee);
+        employeeServicePort.createEmployee(ownerId,employee);
     }
 }
