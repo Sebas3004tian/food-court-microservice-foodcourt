@@ -3,7 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -74,9 +74,9 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
 
         when(dishPersistencePort.findByRestaurantAndCategoryPaged(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE))
-                .thenThrow(new NoDataFoundException("No dishes"));
+                .thenThrow(new DishNotFoundException(""));
 
-        assertThrows(NoDataFoundException.class, () ->
+        assertThrows(DishNotFoundException.class, () ->
                 dishUseCase.getDishesPagedByRestaurant(
                         RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE)
         );
@@ -87,9 +87,9 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
 
         when(dishPersistencePort.findByRestaurantPaged(
                 RESTAURANT_ID, PAGE, SIZE))
-                .thenThrow(new NoDataFoundException("No dishes"));
+                .thenThrow(new DishNotFoundException("No dishes"));
 
-        assertThrows(NoDataFoundException.class, () ->
+        assertThrows(DishNotFoundException.class, () ->
                 dishUseCase.getDishesPagedByRestaurant(
                         RESTAURANT_ID, null, PAGE, SIZE)
         );

@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.NotAssignedException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
@@ -96,7 +97,7 @@ class MarkAsDeliveredOrderUseCaseTest {
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
-        assertThrows(UnauthorizedException.class,
+        assertThrows(NotAssignedException.class,
                 () -> orderUseCase.markOrderAsDelivered(1L,100L,"111111"));
     }
 }

@@ -3,7 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.j
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IOrderPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.OrderNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.OrderDishEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.OrderEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IOrderEntityMapper;
@@ -45,7 +45,7 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
                 orderRepository.findByRestaurantIdAndStatus(restaurantId, status, pageable);
 
         if (orderEntityList.isEmpty()) {
-            throw new NoDataFoundException("No orders found for this restaurant with this status");
+            throw new OrderNotFoundException("");
         }
 
         List<Long> orderIds = new ArrayList<>();

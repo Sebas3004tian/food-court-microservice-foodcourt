@@ -3,7 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -71,9 +71,9 @@ class GetAllPagedRestaurantsUseCaseTest {
     void shouldThrowExceptionWhenNoRestaurantsFound() {
 
         when(restaurantPersistencePort.findAllPaged(0, 2))
-                .thenThrow(new NoDataFoundException("Empty list"));
+                .thenThrow(new RestaurantNotFoundException(""));
 
-        assertThrows(NoDataFoundException.class,
+        assertThrows(RestaurantNotFoundException.class,
                 () -> restaurantUseCase.getAllPagedRestaurants(0, 2));
 
         verify(restaurantPersistencePort).findAllPaged(0, 2);

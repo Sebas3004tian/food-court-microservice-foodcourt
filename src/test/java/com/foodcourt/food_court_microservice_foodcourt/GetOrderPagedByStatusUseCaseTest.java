@@ -1,7 +1,5 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
-
-
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
@@ -10,7 +8,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IEmployeePersi
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IOrderPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.OrderNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -107,9 +105,9 @@ class GetOrderPagedByStatusUseCaseTest {
                 OrderStatus.PENDIENTE,
                 page,
                 size
-        )).thenThrow(new NoDataFoundException("No orders found"));
+        )).thenThrow(new OrderNotFoundException(" "));
 
-        assertThrows(NoDataFoundException.class, () ->
+        assertThrows(OrderNotFoundException.class, () ->
                 orderUseCase.getOrderPagedByStatus(userId,status, page, size)
         );
 

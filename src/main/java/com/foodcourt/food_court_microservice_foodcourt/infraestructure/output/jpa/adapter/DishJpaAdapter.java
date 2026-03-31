@@ -2,7 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.j
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.DishEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IDishEntityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IDishRepository;
@@ -50,7 +50,7 @@ public class DishJpaAdapter implements IDishPersistencePort {
         List<DishEntity> dishEntityList = dishRepository.findByRestaurant(restaurantId, pageable);
 
         if (dishEntityList.isEmpty()) {
-            throw new NoDataFoundException("No dishes found for this restaurant");
+            throw new DishNotFoundException("");
         }
 
         return dishEntityMapper.toDishList(dishEntityList);
@@ -65,7 +65,7 @@ public class DishJpaAdapter implements IDishPersistencePort {
                 dishRepository.findByRestaurantAndCategoryPaged(restaurantId, categoryId, pageable);
 
         if (dishEntityList.isEmpty()) {
-            throw new NoDataFoundException("No dishes found for this restaurant and category");
+            throw new DishNotFoundException("");
         }
 
         return dishEntityMapper.toDishList(dishEntityList);

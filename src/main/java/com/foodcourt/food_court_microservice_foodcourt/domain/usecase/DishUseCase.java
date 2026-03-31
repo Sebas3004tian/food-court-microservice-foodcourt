@@ -1,6 +1,10 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.AlreadyExistsException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.CategoryNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Category;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
@@ -8,8 +12,6 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.ICategoryPersi
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.DishValidator;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistsException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -30,7 +32,7 @@ public class DishUseCase implements IDishServicePort {
     public void updateDish(Long userId,Long dishId, BigDecimal dishPrice, String dishDescription){
 
         Dish dish = dishPersistencePort.findOneById(dishId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Dish with id "+dishId));
+                .orElseThrow(() -> new DishNotFoundException(dishId.toString()));
 
         DishValidator.validateOwnership(dish.getRestaurant(),userId);
 
@@ -44,11 +46,11 @@ public class DishUseCase implements IDishServicePort {
     public void enableOrDisableDish(Long userId,Long dishId, boolean active) {
 
         Dish dish = dishPersistencePort.findOneById(dishId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Dish with id "+dishId));
+                .orElseThrow(() -> new DishNotFoundException(dishId.toString()));
 
         Long restaurantId = dish.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+restaurantId));
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId.toString()));
 
         DishValidator.validateOwnership(restaurant,userId);
         DishValidator.validateStatusNotAlreadySet(dish.isActive(),active);
@@ -75,18 +77,18 @@ public class DishUseCase implements IDishServicePort {
 
         Long categoryId = dish.getCategory().getId();
         Category category = categoryPersistencePort.findOneById(categoryId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Category with id "+categoryId));
+                .orElseThrow(() -> new CategoryNotFoundException(categoryId.toString()));
         dish.setCategory(category);
 
         Long restaurantId = dish.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+restaurantId));
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId.toString()));
         dish.setRestaurant(restaurant);
 
         DishValidator.validateOwnership(restaurant, userId);
 
         if (dishPersistencePort.findOneByName(dish.getName()).isPresent()) {
-            throw new AlreadyExistsException("Dish name already exists");
+            throw new AlreadyExistsException("Dish name");
         }
 
         dish.activate();

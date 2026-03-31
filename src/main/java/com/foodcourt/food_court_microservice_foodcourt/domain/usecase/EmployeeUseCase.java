@@ -8,7 +8,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IEmployeePersi
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.EmployeeValidator;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 
 public class EmployeeUseCase implements IEmployeeServicePort {
 
@@ -33,7 +33,7 @@ public class EmployeeUseCase implements IEmployeeServicePort {
         }
 
         Restaurant restaurant = restaurantPersistencePort.findOneById(employee.getRestaurant().getId())
-                .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+employee.getRestaurant().getId()));
+                .orElseThrow(() -> new RestaurantNotFoundException(employee.getRestaurant().getId().toString()));
 
         EmployeeValidator.validateOwnership(restaurant, ownerId);
         EmployeeValidator.validateEmployeeNotExists(employeePersistencePort.existsByUserId(employee.getUserId()));

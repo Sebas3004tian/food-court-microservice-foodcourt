@@ -1,11 +1,10 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.OrderValidator;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
 
 import java.util.List;
 
@@ -32,12 +31,12 @@ public class OrderUseCase implements IOrderServicePort {
 
     private Employee getAuthenticatedEmployee(Long userId) {
         return employeePersistencePort.findOneByUserId(userId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id " + userId));
+                .orElseThrow(() -> new EmployeeNotFoundException(userId.toString()));
     }
 
     private Order getOrder(Long orderId) {
         return orderPersistencePort.findOneById(orderId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Order with id " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId.toString()));
     }
 
     private String sendReadyOrderSms(Long userId, String pin) {
@@ -69,7 +68,7 @@ public class OrderUseCase implements IOrderServicePort {
 
         Long restaurantId = order.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+restaurantId));
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId.toString()));
 
         Order orderToSave = Order.createPendingOrder(order, clientId, restaurant);
         Order persistedOrder = orderPersistencePort.createOrder(orderToSave);
@@ -88,7 +87,7 @@ public class OrderUseCase implements IOrderServicePort {
         try {
             orderStatus = OrderStatus.valueOf(status.toUpperCase());
         } catch (Exception e) {
-            throw new InvalidOrderStatusException("Invalid order status: " + status);
+            throw new InvalidOrderStatusException(status);
         }
 
         return orderPersistencePort.findByRestaurantIdAndStatusPaged(
@@ -153,7 +152,7 @@ public class OrderUseCase implements IOrderServicePort {
 
             Long dishId = orderDish.getDish().getId();
             Dish dish = dishPersistencePort.findOneById(dishId)
-                    .orElseThrow(() -> new NoDataFoundException("Not found the Dish with id "+dishId));
+                    .orElseThrow(() -> new DishNotFoundException(dishId.toString()));
 
             if (!dish.getRestaurant().getId().equals(restaurantId)) {
                 throw new IllegalArgumentException("All dishes must belong to the same restaurant");

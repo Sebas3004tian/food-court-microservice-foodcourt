@@ -1,7 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.validator;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistsException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.AlreadyExistsException;
 
 public class RestaurantValidator {
 
@@ -9,19 +9,19 @@ public class RestaurantValidator {
 
     public static void validateNameNotExists(boolean exists) {
         if (exists) {
-            throw new AlreadyExistsException("Restaurant name already exists");
+            throw new AlreadyExistsException("Restaurant name");
         }
     }
 
     public static void validateNitNotExists(boolean exists) {
         if (exists) {
-            throw new AlreadyExistsException("Restaurant NIT already exists");
+            throw new AlreadyExistsException("Restaurant NIT");
         }
     }
 
     public static void validatePhoneNotExists(boolean exists) {
         if (exists) {
-            throw new AlreadyExistsException("Restaurant phone number already exists");
+            throw new AlreadyExistsException("Restaurant phone number");
         }
     }
 

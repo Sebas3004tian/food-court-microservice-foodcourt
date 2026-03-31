@@ -2,7 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.j
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.RestaurantEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IRestaurantEntityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IRestaurantRepository;
@@ -60,7 +60,7 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
         Page<RestaurantEntity> pageResult = restaurantRepository.findAll(pageable);
 
         if (pageResult.isEmpty()) {
-            throw new NoDataFoundException("The restaurant list is empty");
+            throw new RestaurantNotFoundException("");
         }
 
         List<RestaurantEntity> restaurantEntityList = pageResult.getContent();

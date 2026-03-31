@@ -7,7 +7,8 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersisten
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -73,7 +74,7 @@ class EnableOrDisableDishUseCaseTest {
     void shouldThrowExceptionWhenDishNotFound() {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.empty());
 
-        assertThrows(NoDataFoundException.class,
+        assertThrows(DishNotFoundException.class,
                 () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
@@ -84,7 +85,7 @@ class EnableOrDisableDishUseCaseTest {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.empty());
 
-        assertThrows(NoDataFoundException.class,
+        assertThrows(RestaurantNotFoundException.class,
                 () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());

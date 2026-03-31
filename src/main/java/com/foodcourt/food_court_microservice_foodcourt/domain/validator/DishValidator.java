@@ -11,7 +11,7 @@ public class DishValidator {
 
     public static void validateOwnership(Restaurant restaurant, Long userId) {
         if (!restaurant.getOwnerId().equals(userId)) {
-            throw new UnauthorizedException("You are not the owner of this restaurant");
+            throw new UnauthorizedException();
         }
     }
 
