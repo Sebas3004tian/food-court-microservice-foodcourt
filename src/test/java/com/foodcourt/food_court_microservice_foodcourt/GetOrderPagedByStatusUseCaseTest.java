@@ -15,6 +15,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 import java.util.Optional;
@@ -63,7 +65,7 @@ class GetOrderPagedByStatusUseCaseTest {
 
         Long userId = 10L;
 
-        List<Order> expectedOrders = List.of(order);
+        Page<Order> pageResult = new PageImpl<>(List.of(order));
 
         when(employeePersistencePort.findOneByUserId(userId))
                 .thenReturn(Optional.of(employee));
@@ -73,13 +75,13 @@ class GetOrderPagedByStatusUseCaseTest {
                 OrderStatus.PENDIENTE,
                 page,
                 size
-        )).thenReturn(expectedOrders);
+        )).thenReturn(pageResult);
 
-        List<Order> result = orderUseCase.getOrderPagedByStatus(userId,status, page, size);
+        Page<Order> result = orderUseCase.getOrderPagedByStatus(userId, status, page, size);
 
         assertNotNull(result);
-        assertEquals(1, result.size());
-        assertEquals(OrderStatus.PENDIENTE, result.get(0).getStatus());
+        assertEquals(1, result.getContent().size());
+        assertEquals(OrderStatus.PENDIENTE, result.getContent().get(0).getStatus());
 
         verify(orderPersistencePort).findByRestaurantIdAndStatusPaged(
                 restaurant.getId(),

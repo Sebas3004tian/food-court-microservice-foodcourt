@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 
 import java.util.List;
 
@@ -37,14 +39,16 @@ class GetAllPagedRestaurantsUseCaseTest {
     @Test
     void shouldReturnPagedRestaurantsSuccessfully() {
 
-        when(restaurantPersistencePort.findAllPaged(0, 2))
-                .thenReturn(restaurantList);
+        Page<Restaurant> pageResult = new PageImpl<>(restaurantList);
 
-        List<Restaurant> result = restaurantUseCase.getAllPagedRestaurants(0, 2);
+        when(restaurantPersistencePort.findAllPaged(0, 2))
+                .thenReturn(pageResult);
+
+        Page<Restaurant> result = restaurantUseCase.getAllPagedRestaurants(0, 2);
 
         assertNotNull(result);
-        assertEquals(2, result.size());
-        assertEquals("Burger House", result.get(0).getName());
+        assertEquals(2, result.getContent().size());
+        assertEquals("Burger House", result.getContent().get(0).getName());
 
         verify(restaurantPersistencePort).findAllPaged(0, 2);
     }

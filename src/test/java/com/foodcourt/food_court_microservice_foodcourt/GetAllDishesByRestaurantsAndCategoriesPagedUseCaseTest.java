@@ -10,6 +10,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -40,14 +43,16 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
     @Test
     void shouldReturnDishesWhenCategoryIsProvided() {
 
+        Page<Dish> pageResult = new PageImpl<>(List.of(dish));
+
         when(dishPersistencePort.findByRestaurantAndCategoryPaged(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE))
-                .thenReturn(List.of(dish));
+                .thenReturn(pageResult);
 
-        List<Dish> result = dishUseCase.getDishesPagedByRestaurant(
+        Page<Dish> result = dishUseCase.getDishesPagedByRestaurant(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE);
 
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
         verify(dishPersistencePort).findByRestaurantAndCategoryPaged(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE);
@@ -56,14 +61,16 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
     @Test
     void shouldReturnDishesWhenCategoryIsNull() {
 
+        Page<Dish> pageResult = new PageImpl<>(List.of(dish));
+
         when(dishPersistencePort.findByRestaurantPaged(
                 RESTAURANT_ID, PAGE, SIZE))
-                .thenReturn(List.of(dish));
+                .thenReturn(pageResult);
 
-        List<Dish> result = dishUseCase.getDishesPagedByRestaurant(
+        Page<Dish> result = dishUseCase.getDishesPagedByRestaurant(
                 RESTAURANT_ID, null, PAGE, SIZE);
 
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
         verify(dishPersistencePort).findByRestaurantPaged(
                 RESTAURANT_ID, PAGE, SIZE);
