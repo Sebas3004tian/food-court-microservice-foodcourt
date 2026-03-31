@@ -1,6 +1,6 @@
-package com.foodcourt.food_court_microservice_foodcourt.domain.spi;
+package com.foodcourt.food_court_microservice_foodcourt.domain.api;
 
-public interface IUserExternalPort {
+public interface IUserServicePort {
     boolean isUserOwner(Long userId);
     boolean isUserEmployee(Long userId);
     String getPhone(Long id);

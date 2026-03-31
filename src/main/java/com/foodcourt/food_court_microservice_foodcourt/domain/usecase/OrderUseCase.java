@@ -1,11 +1,13 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.OrderValidator;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -17,37 +19,37 @@ public class OrderUseCase implements IOrderServicePort {
     private final IRestaurantPersistencePort restaurantPersistencePort;
     private final IEmployeePersistencePort employeePersistencePort;
 
-    private final ISmsClientPort smsClientPort;
-    private final IUserExternalPort userExternalPort;
+    private final ISmsServicePort smsServicePort;
+    private final IUserServicePort userServicePort;
 
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsClientPort smsClientPort, IUserExternalPort userExternalPort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsServicePort smsServicePort, IUserServicePort userServicePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.restaurantPersistencePort = restaurantPersistencePort;
         this.employeePersistencePort = employeePersistencePort;
-        this.smsClientPort = smsClientPort;
-        this.userExternalPort = userExternalPort;
+        this.smsServicePort = smsServicePort;
+        this.userServicePort = userServicePort;
     }
 
     private Employee getAuthenticatedEmployee(Long userId) {
         return employeePersistencePort.findOneByUserId(userId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id " + userId));
+                .orElseThrow(() -> new EmployeeNotFoundException(userId.toString()));
     }
 
     private Order getOrder(Long orderId) {
         return orderPersistencePort.findOneById(orderId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Order with id " + orderId));
+                .orElseThrow(() -> new OrderNotFoundException(orderId.toString()));
     }
 
     private String sendReadyOrderSms(Long userId, String pin) {
-        String phoneNumber = userExternalPort.getPhone(userId);
+        String phoneNumber = userServicePort.getPhone(userId);
 
         if (phoneNumber == null) {
             return "Order marked as ready but SMS failed  (user service error)";
         }
 
-        String smsResponse = smsClientPort.sendSms(
+        String smsResponse = smsServicePort.sendSms(
                 phoneNumber,
                 "Tu pedido está listo. PIN: " + pin
         );
@@ -69,7 +71,7 @@ public class OrderUseCase implements IOrderServicePort {
 
         Long restaurantId = order.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+restaurantId));
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId.toString()));
 
         Order orderToSave = Order.createPendingOrder(order, clientId, restaurant);
         Order persistedOrder = orderPersistencePort.createOrder(orderToSave);
@@ -79,7 +81,7 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public List<Order> getOrderPagedByStatus(Long userId,String status, int page, int size) {
+    public Page<Order> getOrderPagedByStatus(Long userId, String status, int page, int size) {
         OrderValidator.validatePaginationParams(page, size);
 
         Employee employee = getAuthenticatedEmployee(userId);
@@ -88,7 +90,7 @@ public class OrderUseCase implements IOrderServicePort {
         try {
             orderStatus = OrderStatus.valueOf(status.toUpperCase());
         } catch (Exception e) {
-            throw new InvalidOrderStatusException("Invalid order status: " + status);
+            throw new InvalidOrderStatusException(status);
         }
 
         return orderPersistencePort.findByRestaurantIdAndStatusPaged(
@@ -153,7 +155,7 @@ public class OrderUseCase implements IOrderServicePort {
 
             Long dishId = orderDish.getDish().getId();
             Dish dish = dishPersistencePort.findOneById(dishId)
-                    .orElseThrow(() -> new NoDataFoundException("Not found the Dish with id "+dishId));
+                    .orElseThrow(() -> new DishNotFoundException(dishId.toString()));
 
             if (!dish.getRestaurant().getId().equals(restaurantId)) {
                 throw new IllegalArgumentException("All dishes must belong to the same restaurant");

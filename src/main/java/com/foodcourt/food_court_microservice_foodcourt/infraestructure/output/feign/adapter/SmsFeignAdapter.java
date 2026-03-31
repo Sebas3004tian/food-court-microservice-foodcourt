@@ -1,12 +1,12 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter;
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.SendSmsRequestDto;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.ISmsClientPort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.ISmsFeignClient;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class SmsFeignAdapter implements ISmsClientPort {
+public class SmsFeignAdapter implements ISmsServicePort {
 
     private final ISmsFeignClient smsFeignClient;
 

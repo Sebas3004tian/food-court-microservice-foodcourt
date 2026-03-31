@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.rest;
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateRestaurantRequestDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.PageResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.RestaurantResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IRestaurantHandler;
 import io.swagger.v3.oas.annotations.Operation;
@@ -31,12 +32,12 @@ public class RestaurantRestController {
             @ApiResponse(responseCode = "403", description = "Access Denied"),
             @ApiResponse(responseCode = "409", description = "Restaurant already exists")
     })
-    public ResponseEntity<Void> createOwner(@Valid @RequestBody CreateRestaurantRequestDto createRestaurantRequestDto){
+    public ResponseEntity<Void> createRestaurant(@Valid @RequestBody CreateRestaurantRequestDto createRestaurantRequestDto){
         restaurantHandler.createRestaurant(createRestaurantRequestDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     @GetMapping("/paged")
     @Operation(summary = "Get all available restaurants ")
     @ApiResponses(value = {
@@ -44,7 +45,7 @@ public class RestaurantRestController {
             @ApiResponse(responseCode = "403", description = "Access Denied"),
             @ApiResponse(responseCode = "409", description = "There are no restaurants created")
     })
-    public ResponseEntity<List<RestaurantResponseDto>> getAllPagedRestaurants(
+    public ResponseEntity<PageResponseDto<RestaurantResponseDto>> getAllPagedRestaurants(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){

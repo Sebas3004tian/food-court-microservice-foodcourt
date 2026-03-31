@@ -1,5 +1,6 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
@@ -7,7 +8,8 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderDish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -101,7 +103,7 @@ class CreateOrderUseCaseTest {
 
         List<OrderDish> dishes = List.of(orderDish);
 
-        assertThrows(NoDataFoundException.class,
+        assertThrows(RestaurantNotFoundException.class,
                 () -> orderUseCase.createOrder(1L,order, dishes));
 
         verify(orderPersistencePort, never()).createOrder(any());
@@ -124,7 +126,7 @@ class CreateOrderUseCaseTest {
 
         List<OrderDish> dishes = List.of(orderDish);
 
-        assertThrows(NoDataFoundException.class,
+        assertThrows(DishNotFoundException.class,
                 () -> orderUseCase.createOrder(1L,order, dishes));
     }
 

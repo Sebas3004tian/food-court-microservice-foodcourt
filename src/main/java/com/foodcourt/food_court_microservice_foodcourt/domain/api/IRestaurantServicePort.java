@@ -1,10 +1,9 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.api;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface IRestaurantServicePort {
     void createRestaurant (Restaurant restaurant);
-    List<Restaurant> getAllPagedRestaurants(int page, int size);
+    Page<Restaurant> getAllPagedRestaurants(int page, int size);
 }

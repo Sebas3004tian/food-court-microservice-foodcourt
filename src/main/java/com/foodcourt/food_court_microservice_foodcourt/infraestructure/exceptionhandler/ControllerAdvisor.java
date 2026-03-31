@@ -77,8 +77,48 @@ public class ControllerAdvisor {
         return ResponseEntity.status(ex.getStatus()).body(response);
     }
 
-    @ExceptionHandler(NoDataFoundException.class)
-    public ResponseEntity<Map<String, String>> handleNoDataFoundException(NoDataFoundException ex) {
+    @ExceptionHandler(CategoryNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleCategoryNotFoundException(CategoryNotFoundException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.DATA_NOT_FOUND.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+    @ExceptionHandler(DishNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleDishNotFoundException(DishNotFoundException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.DATA_NOT_FOUND.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+    @ExceptionHandler(EmployeeNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleEmployeeNotFoundException(EmployeeNotFoundException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.DATA_NOT_FOUND.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleOrderNotFoundException(OrderNotFoundException ex) {
+
+        Map<String, String> response = Map.of(
+                ERROR, ExceptionResponse.DATA_NOT_FOUND.getMessage(),
+                MESSAGE, ex.getMessage()
+        );
+
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+    @ExceptionHandler(RestaurantNotFoundException.class)
+    public ResponseEntity<Map<String, String>> handleRestaurantNotFoundException(RestaurantNotFoundException ex) {
 
         Map<String, String> response = Map.of(
                 ERROR, ExceptionResponse.DATA_NOT_FOUND.getMessage(),

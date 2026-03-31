@@ -33,7 +33,7 @@ public class SecurityConfiguration {
                 .build();
 
         } catch (Exception e) {
-            throw new SecurityConfigurationException("Error configuring the security filter chain");
+            throw new SecurityConfigurationException();
         }
     }
 
