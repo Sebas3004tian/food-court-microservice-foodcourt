@@ -10,4 +10,5 @@ public interface IOrderHandler {
     List<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size);
     void assignOrder(Long orderId);
     String markOrderAsReady(Long orderId);
+    void markOrderAsDelivered(Long orderId, String pin);
 }

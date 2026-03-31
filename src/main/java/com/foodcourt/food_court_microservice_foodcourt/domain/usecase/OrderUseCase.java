@@ -35,7 +35,7 @@ public class OrderUseCase implements IOrderServicePort {
                 .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id " + userId));
     }
 
-    private Order getOrderOrThrow(Long orderId) {
+    private Order getOrder(Long orderId) {
         return orderPersistencePort.findOneById(orderId)
                 .orElseThrow(() -> new NoDataFoundException("Not found the Order with id " + orderId));
     }
@@ -102,7 +102,7 @@ public class OrderUseCase implements IOrderServicePort {
     @Override
     public void assignOrder(Long userId,Long orderId) {
         Employee employee = getAuthenticatedEmployee(userId);
-        Order order = getOrderOrThrow(orderId);
+        Order order = getOrder(orderId);
 
         OrderValidator.validateSameRestaurant(employee, order);
         OrderValidator.validateOrderStatus(order, OrderStatus.PENDIENTE);
@@ -116,16 +116,31 @@ public class OrderUseCase implements IOrderServicePort {
     @Override
     public String markOrderAsReady(Long userId,Long orderId) {
         Employee employee = getAuthenticatedEmployee(userId);
-        Order order = getOrderOrThrow(orderId);
+        Order order = getOrder(orderId);
 
         OrderValidator.validateSameRestaurant(employee, order);
         OrderValidator.validateOrderStatus(order, OrderStatus.EN_PREPARACION);
         OrderValidator.validateAssignedEmployee(order, employee);
 
-        String pin = order.markAsReady();
+        order.markAsReady();
         orderPersistencePort.updateOrder(order);
+        String pin = order.getSecurityPin();
 
         return sendReadyOrderSms(order.getClientId(), pin);
+    }
+
+    @Override
+    public void markOrderAsDelivered(Long userId, Long orderId, String pin) {
+        Employee employee = getAuthenticatedEmployee(userId);
+        Order order = getOrder(orderId);
+
+        OrderValidator.validateSameRestaurant(employee, order);
+        OrderValidator.validateOrderStatus(order, OrderStatus.LISTO);
+        OrderValidator.validateAssignedEmployee(order, employee);
+        OrderValidator.validateSecurityPin(order,pin);
+
+        order.markAsDelivered();
+        orderPersistencePort.updateOrder(order);
     }
 
     private List<OrderDish> prepareDishes(Long restaurantId, List<OrderDish> orderDishList) {

@@ -30,25 +30,30 @@ public class OrderHandler implements IOrderHandler {
     public void createOrder(CreateOrderRequestDto orderRequestDto) {
         Order order = orderRequestMapper.toOrder(orderRequestDto);
         List<OrderDish> orderDishList = orderRequestMapper.toOrderDishList(orderRequestDto.getDishes());
-        Long userId = jwtServicePort.getAuthenticatedUserId();
-        orderServicePort.createOrder(userId,order, orderDishList);
+        orderServicePort.createOrder(getAuthUserId(),order, orderDishList);
     }
 
     @Override
     public List<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size) {
-        Long userId = jwtServicePort.getAuthenticatedUserId();
-        return orderResponseMapper.toResponseList(orderServicePort.getOrderPagedByStatus(userId,status,page,size));
+        return orderResponseMapper.toResponseList(orderServicePort.getOrderPagedByStatus(getAuthUserId(),status,page,size));
     }
 
     @Override
     public void assignOrder(Long orderId) {
-        Long userId = jwtServicePort.getAuthenticatedUserId();
-        orderServicePort.assignOrder(userId,orderId);
+        orderServicePort.assignOrder(getAuthUserId(),orderId);
     }
 
     @Override
     public String markOrderAsReady(Long orderId) {
-        Long userId = jwtServicePort.getAuthenticatedUserId();
-        return orderServicePort.markOrderAsReady(userId,orderId);
+        return orderServicePort.markOrderAsReady(getAuthUserId(),orderId);
+    }
+
+    @Override
+    public void markOrderAsDelivered(Long orderId, String pin) {
+        orderServicePort.markOrderAsDelivered(getAuthUserId(), orderId, pin);
+    }
+
+    public Long getAuthUserId(){
+        return jwtServicePort.getAuthenticatedUserId();
     }
 }

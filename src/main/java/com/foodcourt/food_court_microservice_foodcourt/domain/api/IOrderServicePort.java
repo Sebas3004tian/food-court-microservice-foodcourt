@@ -11,4 +11,5 @@ public interface IOrderServicePort {
     List<Order> getOrderPagedByStatus(Long userId, String status, int page, int size);
     void assignOrder(Long userId, Long orderId);
     String markOrderAsReady(Long userId, Long orderId);
+    void markOrderAsDelivered(Long userId, Long orderId, String pin);
 }
