@@ -1,11 +1,13 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.RestaurantValidator;
 import org.springframework.data.domain.Page;
+
 
 public class RestaurantUseCase  implements IRestaurantServicePort {
 
@@ -35,6 +37,10 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
 
         RestaurantValidator.validateUserIsOwner(userServicePort.isUserOwner(restaurant.getOwnerId()));
 
+        RestaurantValidator.validateOwnerAlreadyHaveRestaurant(
+                restaurantPersistencePort.findRestaurantId(restaurant.getOwnerId()).isPresent()
+        );
+
         restaurantPersistencePort.createRestaurant(restaurant);
     }
 
@@ -43,5 +49,11 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
         RestaurantValidator.validatePaginationParams(page, size);
 
         return restaurantPersistencePort.findAllPaged(page, size);
+    }
+
+    @Override
+    public Long getRestaurantId(Long authenticatedUserId) {
+        return restaurantPersistencePort.findRestaurantId(authenticatedUserId)
+                .orElseThrow(() -> new RestaurantNotFoundException(""));
     }
 }

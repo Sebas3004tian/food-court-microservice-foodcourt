@@ -1,11 +1,8 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.DishEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.RestaurantEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IRestaurantEntityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IRestaurantRepository;
@@ -70,6 +67,11 @@ public class RestaurantJpaAdapter implements IRestaurantPersistencePort {
                 restaurantEntityPage.getPageable(),
                 restaurantEntityPage.getTotalElements()
         );
+    }
+
+    @Override
+    public Optional<Long> findRestaurantId(Long ownerId) {
+        return restaurantRepository.findIdByOwnerId(ownerId);
     }
 
 }

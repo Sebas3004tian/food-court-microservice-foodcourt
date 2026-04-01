@@ -6,4 +6,5 @@ import org.springframework.data.domain.Page;
 public interface IRestaurantServicePort {
     void createRestaurant (Restaurant restaurant);
     Page<Restaurant> getAllPagedRestaurants(int page, int size);
+    Long getRestaurantId(Long authenticatedUserId);
 }

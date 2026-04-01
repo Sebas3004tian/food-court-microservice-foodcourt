@@ -4,7 +4,6 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import org.springframework.data.domain.Page;
 
 import java.math.BigDecimal;
-import java.util.List;
 
 public interface IDishServicePort {
     void createDish(Long userId, Dish dish);

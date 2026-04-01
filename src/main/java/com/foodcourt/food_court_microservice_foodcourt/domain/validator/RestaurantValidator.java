@@ -36,4 +36,10 @@ public class RestaurantValidator {
             throw new IllegalArgumentException("Invalid pagination params");
         }
     }
+
+    public static void validateOwnerAlreadyHaveRestaurant(boolean exists) {
+        if (exists) {
+            throw new AlreadyExistsException("The owner user already have a restaurant");
+        }
+    }
 }
