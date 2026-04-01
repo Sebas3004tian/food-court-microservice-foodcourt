@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
@@ -31,6 +32,9 @@ class MarkAsCancelledOrderUseCaseTest {
     private IUserServicePort userServicePort;
     @Mock
     private ISmsServicePort smsServicePort;
+
+    @Mock
+    private ITraceabilityServicePort traceabilityServicePort;
 
     @InjectMocks
     private OrderUseCase orderUseCase;

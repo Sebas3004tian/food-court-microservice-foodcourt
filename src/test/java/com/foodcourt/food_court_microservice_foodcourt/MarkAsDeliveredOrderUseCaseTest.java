@@ -1,5 +1,8 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.NotAssignedException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
@@ -20,6 +23,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,6 +35,24 @@ class MarkAsDeliveredOrderUseCaseTest {
     private IOrderPersistencePort orderPersistencePort;
     @Mock
     private IEmployeePersistencePort employeePersistencePort;
+
+    @Mock
+    private ITraceabilityServicePort traceabilityServicePort;
+
+    @Mock
+    private IUserServicePort userServicePort;
+
+    @Mock
+    private ISmsServicePort smsServicePort;
+
+    @Mock
+    private IOrderDishPersistencePort orderDishPersistencePort;
+
+    @Mock
+    private IDishPersistencePort dishPersistencePort;
+
+    @Mock
+    private IRestaurantPersistencePort restaurantPersistencePort;
 
     @InjectMocks
     private OrderUseCase orderUseCase;
@@ -44,6 +68,7 @@ class MarkAsDeliveredOrderUseCaseTest {
 
         employee = new Employee();
         employee.setId(10L);
+        employee.setUserId(10L);
         employee.setRestaurant(restaurant);
 
         order = new Order();
@@ -60,6 +85,9 @@ class MarkAsDeliveredOrderUseCaseTest {
 
         when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
+
+        when(userServicePort.getEmail(anyLong())).thenReturn("test@mail.com");
+        doNothing().when(traceabilityServicePort).saveOrderTraceability(any());
 
         orderUseCase.markOrderAsDelivered(1L,100L,"111111");
 

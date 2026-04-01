@@ -1,6 +1,8 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
@@ -40,6 +42,12 @@ class CreateOrderUseCaseTest {
 
     @Mock
     private IJwtServicePort jwtServicePort;
+
+    @Mock
+    private ITraceabilityServicePort traceabilityServicePort;
+    
+    @Mock
+    private IUserServicePort userServicePort;
 
     @InjectMocks
     private OrderUseCase orderUseCase;
@@ -85,6 +93,8 @@ class CreateOrderUseCaseTest {
                     o.setId(100L);
                     return o;
                 });
+        when(userServicePort.getEmail(anyLong())).thenReturn("test@mail.com");
+        doNothing().when(traceabilityServicePort).saveOrderTraceability(any());
 
         orderUseCase.createOrder(1L,order, List.of(orderDish));
 

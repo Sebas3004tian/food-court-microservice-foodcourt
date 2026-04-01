@@ -2,6 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.NotAssignedException;
@@ -33,6 +34,9 @@ class MarkAsReadyOrderUseCaseTest {
     private IRestaurantPersistencePort restaurantPersistencePort;
     @Mock
     private IEmployeePersistencePort employeePersistencePort;
+
+    @Mock
+    private ITraceabilityServicePort traceabilityServicePort;
     @Mock
     private ISmsServicePort smsServicePort;
     @Mock
@@ -53,14 +57,15 @@ class MarkAsReadyOrderUseCaseTest {
         restaurant.setId(1L);
 
         employee = new Employee();
-        employee.setId(10L);
+        employee.setId(1L);
+        employee.setUserId(1L);
         employee.setRestaurant(restaurant);
 
         order = new Order();
         order.setId(100L);
         order.setRestaurant(restaurant);
         order.setStatus(OrderStatus.EN_PREPARACION);
-        order.setEmployeeId(10L);
+        order.setEmployeeId(1L);
         order.setClientId(1L);
     }
 
@@ -71,6 +76,8 @@ class MarkAsReadyOrderUseCaseTest {
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
         when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
         when(smsServicePort.sendSms(anyString(), anyString())).thenReturn("SMS SENT");
+        when(userServicePort.getEmail(anyLong())).thenReturn("test@mail.com");
+        doNothing().when(traceabilityServicePort).saveOrderTraceability(any());
 
         String response = orderUseCase.markOrderAsReady(1L,100L);
 
@@ -124,6 +131,8 @@ class MarkAsReadyOrderUseCaseTest {
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
         when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
         when(smsServicePort.sendSms(anyString(), anyString())).thenReturn(null);
+        when(userServicePort.getEmail(anyLong())).thenReturn("test@mail.com");
+        doNothing().when(traceabilityServicePort).saveOrderTraceability(any());
 
         String response = orderUseCase.markOrderAsReady(1L,100L);
 

@@ -2,6 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
@@ -44,6 +45,9 @@ class AssignOrderUseCaseTest {
 
     @Mock
     private IUserServicePort userServicePort;
+
+    @Mock
+    private ITraceabilityServicePort traceabilityServicePort;
 
     @Mock
     private IJwtServicePort jwtServicePort;
