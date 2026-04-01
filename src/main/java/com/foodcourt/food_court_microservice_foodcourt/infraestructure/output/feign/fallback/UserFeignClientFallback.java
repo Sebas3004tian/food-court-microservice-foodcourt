@@ -16,4 +16,9 @@ public class UserFeignClientFallback implements IUserFeignClient {
     public String getPhone(Long id) {
         return null;
     }
+
+    @Override
+    public String getEmail(Long id) {
+        return null;
+    }
 }

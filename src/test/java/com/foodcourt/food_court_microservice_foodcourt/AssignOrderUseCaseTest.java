@@ -73,13 +73,13 @@ class AssignOrderUseCaseTest {
     @Test
     void shouldAssignOrderAndSetStatusInPreparation() {
 
-        when(employeePersistencePort.findOneByUserId(employee.getId()))
+        when(employeePersistencePort.findOneByUserId(employee.getUserId()))
                 .thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
-        orderUseCase.assignOrder(employee.getId(),order.getId());
+        orderUseCase.assignOrder(employee.getUserId(),order.getId());
 
-        assertEquals(employee.getId(), order.getEmployeeId());
+        assertEquals(employee.getUserId(), order.getEmployeeId());
         assertEquals(OrderStatus.EN_PREPARACION, order.getStatus());
 
         verify(orderPersistencePort).updateOrder(order);

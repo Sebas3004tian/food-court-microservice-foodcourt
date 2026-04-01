@@ -19,4 +19,7 @@ public interface IUserFeignClient {
 
     @GetMapping("/user/{id}/phone")
     String getPhone(@PathVariable Long id);
+
+    @GetMapping("/user/{id}/email")
+    String getEmail(@PathVariable Long id);
 }

@@ -32,7 +32,7 @@ public class OrderValidator {
     }
 
     public static void validateAssignedEmployee(Order order, Employee employee) {
-        if (!order.getEmployeeId().equals(employee.getId())) {
+        if (!order.getEmployeeId().equals(employee.getUserId())) {
             throw new NotAssignedException();
         }
     }

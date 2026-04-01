@@ -23,4 +23,9 @@ public class UserFeignAdapter implements IUserServicePort {
     public String getPhone(Long id) {
         return userFeignClient.getPhone(id);
     }
+
+    @Override
+    public String getEmail(Long id) {
+        return userFeignClient.getEmail(id);
+    }
 }

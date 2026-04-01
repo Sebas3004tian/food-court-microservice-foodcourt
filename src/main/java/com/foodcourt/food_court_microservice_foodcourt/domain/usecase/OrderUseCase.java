@@ -2,6 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
@@ -21,8 +22,9 @@ public class OrderUseCase implements IOrderServicePort {
 
     private final ISmsServicePort smsServicePort;
     private final IUserServicePort userServicePort;
+    private final ITraceabilityServicePort traceabilityServicePort;
 
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsServicePort smsServicePort, IUserServicePort userServicePort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsServicePort smsServicePort, IUserServicePort userServicePort, ITraceabilityServicePort traceabilityServicePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
@@ -30,6 +32,7 @@ public class OrderUseCase implements IOrderServicePort {
         this.employeePersistencePort = employeePersistencePort;
         this.smsServicePort = smsServicePort;
         this.userServicePort = userServicePort;
+        this.traceabilityServicePort = traceabilityServicePort;
     }
 
     private Employee getAuthenticatedEmployee(Long userId) {
@@ -97,6 +100,8 @@ public class OrderUseCase implements IOrderServicePort {
 
         List<OrderDish> preparedDishes = prepareDishes(restaurantId, orderDishList);
         orderDishPersistencePort.createOrderDishList(preparedDishes, persistedOrder);
+
+        saveTraceability(persistedOrder,null,OrderStatus.PENDIENTE);
     }
 
     @Override
@@ -128,10 +133,12 @@ public class OrderUseCase implements IOrderServicePort {
         OrderValidator.validateSameRestaurant(employee, order);
         OrderValidator.validateOrderStatus(order, OrderStatus.PENDIENTE);
 
-        order.setEmployeeId(employee.getId());
+        order.setEmployeeId(userId);
         order.setStatus(OrderStatus.EN_PREPARACION);
 
         orderPersistencePort.updateOrder(order);
+
+        saveTraceability(order, OrderStatus.PENDIENTE,OrderStatus.EN_PREPARACION);
     }
 
     @Override
@@ -143,9 +150,11 @@ public class OrderUseCase implements IOrderServicePort {
         OrderValidator.validateOrderStatus(order, OrderStatus.EN_PREPARACION);
         OrderValidator.validateAssignedEmployee(order, employee);
 
-
+        order.markAsReady();
         String pin = order.getSecurityPin();
+        orderPersistencePort.updateOrder(order);
 
+        saveTraceability(order, OrderStatus.EN_PREPARACION,OrderStatus.LISTO);
         return sendReadyOrderSms(order.getClientId(), pin);
     }
 
@@ -159,6 +168,7 @@ public class OrderUseCase implements IOrderServicePort {
             return  sendCanceledOrderSms(clientId);
         } else {
             order.markAsCanceled();
+            saveTraceability(order, OrderStatus.PENDIENTE,OrderStatus.CANCELADO);
             orderPersistencePort.updateOrder(order);
             return  "Orden cancelada";
         }
@@ -175,6 +185,7 @@ public class OrderUseCase implements IOrderServicePort {
         OrderValidator.validateSecurityPin(order,pin);
 
         order.markAsDelivered();
+        saveTraceability(order, OrderStatus.LISTO,OrderStatus.ENTREGADO);
         orderPersistencePort.updateOrder(order);
     }
 
@@ -198,6 +209,35 @@ public class OrderUseCase implements IOrderServicePort {
             orderDish.setPrice(orderDish.calculateTotal());
         }
         return orderDishList;
+    }
+
+
+    private void saveTraceability(Order order, OrderStatus previousStatus, OrderStatus newStatus) {
+
+        Long clientId= order.getClientId();
+        String clientEmail=userServicePort.getEmail(clientId);
+
+        Long employeeId= order.getEmployeeId();
+        String employeeEmail=null;
+        if(employeeId!=null) {
+            employeeEmail=userServicePort.getEmail(employeeId);
+        }
+
+        String prevStatus = null;
+        if(previousStatus!=null){
+            prevStatus=previousStatus.name();
+        }
+
+        OrderTraceability orderTraceability = new OrderTraceability(
+                order.getId(),
+                clientId,
+                clientEmail,
+                prevStatus,
+                newStatus.name(),
+                employeeId,
+                employeeEmail
+        );
+        traceabilityServicePort.saveOrderTraceability(orderTraceability);
     }
 
 }
