@@ -7,9 +7,12 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.EmployeeUs
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.SmsFeignAdapter;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.TraceabilityFeignAdapter;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.UserFeignAdapter;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.ISmsFeignClient;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.ITraceabilityFeignClient;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.IUserFeignClient;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.mapper.ITraceabilityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.*;
@@ -38,6 +41,9 @@ public class BeanConfiguration {
 
     private final IUserFeignClient userFeignClient;
     private final ISmsFeignClient smsFeignClient;
+    private final ITraceabilityFeignClient traceabilityFeignClient;
+
+    private final ITraceabilityMapper traceabilityMapper;
 
     @Bean
     public IRestaurantPersistencePort restaurantPersistencePort(){
@@ -82,6 +88,10 @@ public class BeanConfiguration {
     public ISmsServicePort smsServicePort(){
         return new SmsFeignAdapter(smsFeignClient);
     }
+    @Bean
+    public ITraceabilityServicePort traceabilityServicePort(){
+        return new TraceabilityFeignAdapter(traceabilityFeignClient,traceabilityMapper);
+    }
 
     @Bean
     public IRestaurantServicePort restaurantServicePort(){
@@ -109,7 +119,8 @@ public class BeanConfiguration {
                 restaurantPersistencePort(),
                 employeePersistencePort(),
                 smsServicePort(),
-                userServicePort()
+                userServicePort(),
+                traceabilityServicePort()
         );
     }
 
