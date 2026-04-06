@@ -14,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/restaurant")
 @RequiredArgsConstructor
@@ -50,6 +48,18 @@ public class RestaurantRestController {
             @RequestParam(defaultValue = "10") int size
     ){
         return ResponseEntity.ok(restaurantHandler.getAllPagedRestaurants(page, size));
+    }
+
+    @PreAuthorize("hasRole('PROPIETARIO')")
+    @GetMapping("/id")
+    @Operation(summary = "Get restaurant id")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Restaurant id"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "There are no restaurants created")
+    })
+    public ResponseEntity<Long> getMyRestaurantId(){
+        return ResponseEntity.ok(restaurantHandler.getMyRestaurantId());
     }
 
 }

@@ -16,7 +16,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @RequiredArgsConstructor
@@ -86,6 +85,11 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
     @Override
     public Order updateOrder(Order order) {
         return saveOrder(order);
+    }
+
+    @Override
+    public List<Long> findOrdersIdsByRestaurantId(Long restaurantId) {
+        return orderRepository.findOrderIdsByRestaurantId(restaurantId);
     }
 
     private Order saveOrder(Order order) {

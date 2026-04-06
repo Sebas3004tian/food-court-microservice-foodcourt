@@ -45,7 +45,7 @@ class CreateOrderUseCaseTest {
 
     @Mock
     private ITraceabilityServicePort traceabilityServicePort;
-    
+
     @Mock
     private IUserServicePort userServicePort;
 
