@@ -9,7 +9,7 @@ public class UserFeignClientFallback implements IUserFeignClient {
 
     @Override
     public String getUserRole(Long id) {
-        throw new ExternalServiceException("User service unavailable");
+        throw new ExternalServiceException("User not found or User service unavailable");
     }
 
     @Override

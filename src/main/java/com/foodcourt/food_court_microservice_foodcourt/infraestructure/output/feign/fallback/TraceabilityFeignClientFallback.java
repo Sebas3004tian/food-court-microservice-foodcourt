@@ -13,16 +13,16 @@ import java.util.List;
 public class TraceabilityFeignClientFallback implements ITraceabilityFeignClient {
     @Override
     public void saveOrderTraceability(OrderTraceabilityRequestDto orderTraceabilityRequestDto) {
-        throw new ExternalServiceException("Traceability service unavailable");
+        throw new ExternalServiceException("cant save traceability");
     }
 
     @Override
     public List<OrderEfficiencyResponseDto> getOrderEfficiency(List<Long> orderIds) {
-        throw new ExternalServiceException("Traceability service unavailable");
+        throw new ExternalServiceException("cant get Order Efficiency");
     }
 
     @Override
     public List<EmployeeEfficiencyResponseDto> getEmployeesRanking(List<Long> orderIds) {
-        throw new ExternalServiceException("Traceability service unavailable");
+        throw new ExternalServiceException("cant get Employees Ranking");
     }
 }

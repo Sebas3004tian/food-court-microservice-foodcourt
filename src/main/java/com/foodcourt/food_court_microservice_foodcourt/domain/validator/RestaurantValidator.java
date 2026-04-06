@@ -1,11 +1,11 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.validator;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.AlreadyExistsException;
 
 public class RestaurantValidator {
 
-    private RestaurantValidator() {}
+    private RestaurantValidator() {
+    }
 
     public static void validateNameNotExists(boolean exists) {
         if (exists) {
@@ -22,12 +22,6 @@ public class RestaurantValidator {
     public static void validatePhoneNotExists(boolean exists) {
         if (exists) {
             throw new AlreadyExistsException("Restaurant phone number");
-        }
-    }
-
-    public static void validateUserIsOwner(boolean isOwner) {
-        if (!isOwner) {
-            throw new InvalidUserRoleException("The user does not exist or does not have the role of PROPIETARIO");
         }
     }
 

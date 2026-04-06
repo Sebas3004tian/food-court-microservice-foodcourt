@@ -2,6 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.f
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.SendSmsRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.model.SmsResultMessage;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.ISmsFeignClient;
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +19,10 @@ public class SmsFeignAdapter implements ISmsServicePort {
                 sms
         );
 
-        return smsFeignClient.sendSms(request);
+        String smsResponse = smsFeignClient.sendSms(request);
+        if (smsResponse == null) {
+            return SmsResultMessage.ORDER_READY_SMS_ERROR.getMessage();
+        }
+        return smsResponse;
     }
 }

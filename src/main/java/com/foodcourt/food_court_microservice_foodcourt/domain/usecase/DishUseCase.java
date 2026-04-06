@@ -62,7 +62,8 @@ public class DishUseCase implements IDishServicePort {
 
     @Override
     public Page<Dish> getDishesPagedByRestaurant(Long restaurantId, Long categoryId, int page, int size) {
-
+        restaurantPersistencePort.findOneById(restaurantId)
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId.toString()));
         DishValidator.validatePaginationParams(page, size);
 
         if (categoryId != null) {

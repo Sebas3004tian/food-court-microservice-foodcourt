@@ -4,7 +4,6 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantSer
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.RestaurantValidator;
 import org.springframework.data.domain.Page;
 
@@ -12,12 +11,10 @@ import org.springframework.data.domain.Page;
 public class RestaurantUseCase  implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserServicePort userServicePort;
 
 
-    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IUserServicePort userServicePort) {
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort) {
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userServicePort = userServicePort;
     }
 
     @Override
@@ -34,8 +31,6 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
         RestaurantValidator.validatePhoneNotExists(
                 restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()
         );
-
-        RestaurantValidator.validateUserIsOwner(userServicePort.isUserOwner(restaurant.getOwnerId()));
 
         RestaurantValidator.validateOwnerAlreadyHaveRestaurant(
                 restaurantPersistencePort.findRestaurantId(restaurant.getOwnerId()).isPresent()

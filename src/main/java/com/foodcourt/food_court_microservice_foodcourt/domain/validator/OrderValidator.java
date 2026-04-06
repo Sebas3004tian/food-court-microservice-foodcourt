@@ -4,7 +4,6 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHa
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidPinException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.NotAssignedException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
@@ -19,20 +18,14 @@ public class OrderValidator {
         }
     }
 
-    public static void validateSameRestaurant(Employee employee, Order order) {
-        if (!order.getRestaurant().getId().equals(employee.getRestaurant().getId())) {
-            throw new UnauthorizedException();
-        }
-    }
-
     public static void validateOrderStatus(Order order, OrderStatus expectedStatus) {
         if (order.getStatus() != expectedStatus) {
             throw new InvalidOrderStatusException(expectedStatus.name());
         }
     }
 
-    public static void validateAssignedEmployee(Order order, Employee employee) {
-        if (!order.getEmployeeId().equals(employee.getUserId())) {
+    public static void validateAssignedEmployee(Order order, Long employeeId) {
+        if (!order.getEmployeeId().equals(employeeId)) {
             throw new NotAssignedException();
         }
     }

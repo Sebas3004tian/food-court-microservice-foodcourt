@@ -52,7 +52,7 @@ public class DishJpaAdapter implements IDishPersistencePort {
         Page<DishEntity> dishEntityPage = dishRepository.findByRestaurant(restaurantId, pageable);
 
         if (dishEntityPage.isEmpty()) {
-            throw new DishNotFoundException("");
+            throw new DishNotFoundException("(The restaurant now don't have any dish available)");
         }
 
         List<Dish> dishList = dishEntityMapper.toDishList(dishEntityPage.getContent());

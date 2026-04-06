@@ -8,7 +8,10 @@ import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IResta
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IRestaurantResponseMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
+import com.foodcourt.food_court_microservice_foodcourt.domain.model.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -26,10 +29,14 @@ public class RestaurantHandler implements IRestaurantHandler {
     private final IRestaurantResponseMapper restaurantResponseMapper;
 
     private final IJwtServicePort jwtServicePort;
+    private final IUserServicePort userServicePort;
 
     @Override
     public void createRestaurant(CreateRestaurantRequestDto restaurantRequestDto){
         Restaurant restaurant = restaurantRequestMapper.toRestaurant(restaurantRequestDto);
+        if (!userServicePort.isUserOwner(restaurant.getOwnerId())) {
+            throw new InvalidUserRoleException(UserRole.PROPIETARIO.name());
+        }
         restaurantServicePort.createRestaurant(restaurant);
 
     }
