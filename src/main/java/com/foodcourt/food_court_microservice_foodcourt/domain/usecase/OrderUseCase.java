@@ -240,4 +240,15 @@ public class OrderUseCase implements IOrderServicePort {
         traceabilityServicePort.saveOrderTraceability(orderTraceability);
     }
 
+
+    @Override
+    public List<Long> getOrdersIdsByRestaurantId(Long restaurantId) {
+        List<Long> orderIds = orderPersistencePort.findOrdersIdsByRestaurantId(restaurantId);
+        if ( orderIds.isEmpty()){
+            throw new RestaurantNotFoundException("");
+        }
+        return orderIds;
+    }
+
+
 }

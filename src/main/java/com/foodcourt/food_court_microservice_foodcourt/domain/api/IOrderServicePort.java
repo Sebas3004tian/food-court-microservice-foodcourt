@@ -14,4 +14,6 @@ public interface IOrderServicePort {
     String markOrderAsReady(Long userId, Long orderId);
     String markOrderAsCanceled(Long userId, Long orderId);
     void markOrderAsDelivered(Long userId, Long orderId, String pin);
+
+    List<Long> getOrdersIdsByRestaurantId(Long restaurantId);
 }

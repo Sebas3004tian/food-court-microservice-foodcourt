@@ -17,4 +17,5 @@ public interface IOrderPersistencePort {
     Optional<Order> findOneById(Long orderId);
 
     Order updateOrder(Order order);
+    List<Long> findOrdersIdsByRestaurantId(Long restaurantId);
 }

@@ -87,6 +87,11 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
         return saveOrder(order);
     }
 
+    @Override
+    public List<Long> findOrdersIdsByRestaurantId(Long restaurantId) {
+        return orderRepository.findOrderIdsByRestaurantId(restaurantId);
+    }
+
     private Order saveOrder(Order order) {
         OrderEntity orderEntity = orderRepository.save(orderEntityMapper.toEntity(order));
         return orderEntityMapper.toOrder(orderEntity);
