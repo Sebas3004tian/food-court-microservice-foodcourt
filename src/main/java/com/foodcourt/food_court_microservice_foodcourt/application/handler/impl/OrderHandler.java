@@ -6,13 +6,9 @@ import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IOrderHandler;
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IOrderRequestMapper;
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IOrderResponseMapper;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderDish;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.UserRole;
+import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -31,12 +27,15 @@ public class OrderHandler implements IOrderHandler {
 
     private final IJwtServicePort jwtServicePort;
     private final IUserServicePort userServicePort;
+    private final ISmsServicePort smsServicePort;
+    private final ITraceabilityServicePort traceabilityServicePort;
 
     @Override
     public void createOrder(CreateOrderRequestDto orderRequestDto) {
         Order order = orderRequestMapper.toOrder(orderRequestDto);
         List<OrderDish> orderDishList = orderRequestMapper.toOrderDishList(orderRequestDto.getDishes());
-        orderServicePort.createOrder(getAuthUserId(),order, orderDishList);
+        order = orderServicePort.createOrder(getAuthUserId(),order, orderDishList);
+        saveTraceability(order,null,OrderStatus.PENDIENTE);
     }
 
     @Override
@@ -64,25 +63,80 @@ public class OrderHandler implements IOrderHandler {
         if (!userServicePort.isUserEmployee(userId)) {
             throw new InvalidUserRoleException(UserRole.EMPLEADO.name());
         }
-        orderServicePort.assignOrder(userId,orderId);
+        Order order = orderServicePort.getOrderById(orderId);
+        order = orderServicePort.assignOrder(userId,order);
+        saveTraceability(order, OrderStatus.PENDIENTE,OrderStatus.EN_PREPARACION);
     }
 
     @Override
     public String markOrderAsReady(Long orderId) {
-        return orderServicePort.markOrderAsReady(getAuthUserId(),orderId);
+        Order order = orderServicePort.getOrderById(orderId);
+        String pin = orderServicePort.markOrderAsReady(getAuthUserId(),order);
+        String phoneNumber = userServicePort.getPhone(order.getClientId());
+        String smsResponse = smsServicePort.sendSms(
+                phoneNumber,
+                "Tu pedido está listo. PIN: " + pin
+        );
+
+        saveTraceability(order, OrderStatus.EN_PREPARACION,OrderStatus.LISTO);
+        return SmsResultMessage.ORDER_READY_SUCCESS.getMessage() + ": " + smsResponse;
     }
 
     @Override
     public String markOrderAsCanceled(Long orderId) {
-        return orderServicePort.markOrderAsCanceled(getAuthUserId(),orderId);
+        Order order = orderServicePort.getOrderById(orderId);
+        boolean successfully = orderServicePort.markOrderAsCanceled(getAuthUserId(),order);
+
+        if(!successfully) {
+            String phoneNumber = userServicePort.getPhone(order.getClientId());
+            return smsServicePort.sendSms(
+                    phoneNumber,
+                    "Lo sentimos, tu pedido ya está en preparación y no puede cancelarse"
+            );
+        } else {
+            saveTraceability(order, OrderStatus.PENDIENTE,OrderStatus.CANCELADO);
+            return  "Orden cancelada";
+        }
+
     }
 
     @Override
     public void markOrderAsDelivered(Long orderId, String pin) {
-        orderServicePort.markOrderAsDelivered(getAuthUserId(), orderId, pin);
+        Order order = orderServicePort.getOrderById(orderId);
+        orderServicePort.markOrderAsDelivered(getAuthUserId(), order, pin);
+        saveTraceability(order, OrderStatus.LISTO,OrderStatus.ENTREGADO);
     }
 
     public Long getAuthUserId(){
         return jwtServicePort.getAuthenticatedUserId();
+    }
+
+    private void saveTraceability(Order order, OrderStatus previousStatus, OrderStatus newStatus){
+
+        Long clientId= order.getClientId();
+        String clientEmail=userServicePort.getEmail(clientId);
+
+        Long employeeId= order.getEmployeeId();
+        String employeeEmail=null;
+        if(employeeId!=null) {
+            employeeEmail=userServicePort.getEmail(employeeId);
+        }
+
+        String prevStatus = null;
+        if(previousStatus!=null){
+            prevStatus=previousStatus.name();
+        }
+
+        OrderTraceability orderTraceability = new OrderTraceability(
+                order.getId(),
+                clientId,
+                clientEmail,
+                prevStatus,
+                newStatus.name(),
+                employeeId,
+                employeeEmail
+        );
+        traceabilityServicePort.saveOrderTraceability(orderTraceability);
+
     }
 }

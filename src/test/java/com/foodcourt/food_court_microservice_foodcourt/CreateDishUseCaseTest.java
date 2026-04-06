@@ -108,15 +108,12 @@ class CreateDishUseCaseTest {
 
         Long ownerId = 10L;
 
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(1L);
-
-        dish.setRestaurant(restaurant);
+        dish.setRestaurant(new Restaurant());
 
         when(categoryPersistencePort.findOneById(category.getId()))
                 .thenReturn(Optional.of(category));
 
-        when(restaurantPersistencePort.findOneById(restaurant.getId()))
+        when(restaurantPersistencePort.findOneById(1L))
                 .thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () ->

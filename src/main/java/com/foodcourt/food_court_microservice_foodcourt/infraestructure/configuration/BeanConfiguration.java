@@ -109,10 +109,7 @@ public class BeanConfiguration {
                 orderPersistencePort(),
                 orderDishPersistencePort(),
                 dishPersistencePort(),
-                restaurantPersistencePort(),
-                smsServicePort(),
-                userServicePort(),
-                traceabilityServicePort()
+                restaurantPersistencePort()
         );
     }
 }

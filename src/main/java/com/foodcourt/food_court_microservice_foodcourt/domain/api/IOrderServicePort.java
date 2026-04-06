@@ -8,12 +8,14 @@ import java.util.List;
 
 public interface IOrderServicePort {
 
-    void createOrder(Long userId, Order order, List<OrderDish> orderDishList);
+    Order createOrder(Long userId, Order order, List<OrderDish> orderDishList);
     Page<Order> getOrderPagedByStatus(Long userId, Long restaurantId, String status, int page, int size);
-    void assignOrder(Long userId, Long orderId);
-    String markOrderAsReady(Long userId, Long orderId);
-    String markOrderAsCanceled(Long userId, Long orderId);
-    void markOrderAsDelivered(Long userId, Long orderId, String pin);
+    Order assignOrder(Long userId, Order order);
+    String markOrderAsReady(Long userId, Order order);
+    boolean markOrderAsCanceled(Long userId, Order order);
+    void markOrderAsDelivered(Long userId, Order order, String pin);
 
     List<Long> getOrdersIdsByRestaurantId(Long restaurantId);
+
+    Order getOrderById(Long orderId);
 }

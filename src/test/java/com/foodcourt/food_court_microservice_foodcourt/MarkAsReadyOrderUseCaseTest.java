@@ -9,14 +9,11 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.exception.NotAssig
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -62,55 +59,32 @@ class MarkAsReadyOrderUseCaseTest {
     }
 
     @Test
-    void shouldMarkOrderAsReadyAndSendSmsSuccessfully() {
+    void shouldMarkOrderAsReadySuccessfully() {
+        order.setStatus(OrderStatus.EN_PREPARACION);
+        order.setEmployeeId(1L);
 
-        when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-        when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
-        when(smsServicePort.sendSms(anyString(), anyString())).thenReturn("SMS SENT");
-        when(userServicePort.getEmail(anyLong())).thenReturn("test@mail.com");
-        doNothing().when(traceabilityServicePort).saveOrderTraceability(any());
-
-        String response = orderUseCase.markOrderAsReady(1L,100L);
+        String pin = orderUseCase.markOrderAsReady(1L, order);
 
         assertEquals(OrderStatus.LISTO, order.getStatus());
-        assertNotNull(order.getSecurityPin());
-
+        assertNotNull(pin);
         verify(orderPersistencePort).updateOrder(order);
-        verify(smsServicePort).sendSms(anyString(), contains("PIN"));
-
-        assertTrue(response.contains("SMS sent successfully"));
     }
+
     @Test
     void shouldThrowExceptionWhenStatusIsNotInPreparation() {
         order.setStatus(OrderStatus.PENDIENTE);
 
-        when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-
         assertThrows(InvalidOrderStatusException.class,
-                () -> orderUseCase.markOrderAsReady(1L,100L));
+                () -> orderUseCase.markOrderAsReady(1L, order));
     }
 
     @Test
     void shouldThrowUnauthorizedWhenEmployeeNotAssigned() {
+        order.setStatus(OrderStatus.EN_PREPARACION);
         order.setEmployeeId(999L);
 
-        when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-
         assertThrows(NotAssignedException.class,
-                () -> orderUseCase.markOrderAsReady(1L,100L));
+                () -> orderUseCase.markOrderAsReady(1L, order));
     }
 
-    @Test
-    void shouldReturnMessageWhenSmsFails() {
-        when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-        when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
-        when(smsServicePort.sendSms(anyString(), anyString())).thenReturn(null);
-        when(userServicePort.getEmail(anyLong())).thenReturn("test@mail.com");
-        doNothing().when(traceabilityServicePort).saveOrderTraceability(any());
-
-        String response = orderUseCase.markOrderAsReady(1L,100L);
-
-        assertEquals(OrderStatus.LISTO, order.getStatus());
-        assertTrue(response.contains("failed"));
-    }
 }

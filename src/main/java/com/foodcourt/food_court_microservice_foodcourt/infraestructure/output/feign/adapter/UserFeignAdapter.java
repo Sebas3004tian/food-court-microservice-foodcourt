@@ -1,6 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.model.SmsResultMessage;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.IUserFeignClient;
 import lombok.RequiredArgsConstructor;
 
@@ -21,7 +22,11 @@ public class UserFeignAdapter implements IUserServicePort {
 
     @Override
     public String getPhone(Long id) {
-        return userFeignClient.getPhone(id);
+        String phoneNumber = userFeignClient.getPhone(id);
+        if (phoneNumber == null) {
+            return SmsResultMessage.ORDER_READY_USER_ERROR.getMessage();
+        }
+        return phoneNumber;
     }
 
     @Override
