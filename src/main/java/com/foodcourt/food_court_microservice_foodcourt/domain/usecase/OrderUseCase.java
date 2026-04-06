@@ -49,7 +49,7 @@ public class OrderUseCase implements IOrderServicePort {
         String phoneNumber = userServicePort.getPhone(userId);
 
         if (phoneNumber == null) {
-            return "Order marked as ready but SMS failed  (user service error)";
+            return SmsResultMessage.ORDER_READY_USER_ERROR.getMessage();
         }
 
         String smsResponse = smsServicePort.sendSms(
@@ -58,17 +58,17 @@ public class OrderUseCase implements IOrderServicePort {
         );
 
         if (smsResponse == null) {
-            return "Order marked as ready but SMS failed (sms service error)";
+            return SmsResultMessage.ORDER_READY_SMS_ERROR.getMessage();
         }
 
-        return "Order marked as ready and SMS sent successfully: " + smsResponse;
+        return SmsResultMessage.ORDER_READY_SUCCESS.getMessage() + ": " + smsResponse;
     }
 
     private String sendCanceledOrderSms(Long clientId){
         String phoneNumber = userServicePort.getPhone(clientId);
 
         if (phoneNumber == null) {
-            return "SMS failed  (user service error)";
+            return SmsResultMessage.CANCEL_SMS_USER_ERROR.getMessage();
         }
 
         String smsResponse = smsServicePort.sendSms(
@@ -77,7 +77,7 @@ public class OrderUseCase implements IOrderServicePort {
         );
 
         if (smsResponse == null) {
-            return "SMS failed SMS failed (sms service error)";
+            return SmsResultMessage.CANCEL_SMS_ERROR.getMessage();
         }
 
         return smsResponse;

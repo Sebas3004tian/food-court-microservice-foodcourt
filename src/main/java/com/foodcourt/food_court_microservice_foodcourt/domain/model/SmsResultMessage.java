@@ -1,5 +1,8 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.model;
 
+import lombok.Getter;
+
+@Getter
 public enum SmsResultMessage {
     ORDER_READY_SUCCESS("Order marked as ready and SMS sent successfully"),
     ORDER_READY_USER_ERROR("Order marked as ready but SMS failed (user service error)"),
@@ -14,7 +17,4 @@ public enum SmsResultMessage {
         this.message = message;
     }
 
-    public String getMessage() {
-        return message;
-    }
 }
