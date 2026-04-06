@@ -32,8 +32,6 @@ public class RestaurantUseCase  implements IRestaurantServicePort {
                 restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()
         );
 
-        RestaurantValidator.validateUserIsOwner();
-
         RestaurantValidator.validateOwnerAlreadyHaveRestaurant(
                 restaurantPersistencePort.findRestaurantId(restaurant.getOwnerId()).isPresent()
         );
