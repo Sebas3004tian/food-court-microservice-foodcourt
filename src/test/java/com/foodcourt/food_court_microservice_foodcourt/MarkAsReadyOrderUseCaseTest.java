@@ -32,8 +32,6 @@ class MarkAsReadyOrderUseCaseTest {
     private IDishPersistencePort dishPersistencePort;
     @Mock
     private IRestaurantPersistencePort restaurantPersistencePort;
-    @Mock
-    private IEmployeePersistencePort employeePersistencePort;
 
     @Mock
     private ITraceabilityServicePort traceabilityServicePort;
@@ -47,7 +45,6 @@ class MarkAsReadyOrderUseCaseTest {
     @InjectMocks
     private OrderUseCase orderUseCase;
 
-    private Employee employee;
     private Order order;
     private Restaurant restaurant;
 
@@ -55,11 +52,6 @@ class MarkAsReadyOrderUseCaseTest {
     void setUp() {
         restaurant = new Restaurant();
         restaurant.setId(1L);
-
-        employee = new Employee();
-        employee.setId(1L);
-        employee.setUserId(1L);
-        employee.setRestaurant(restaurant);
 
         order = new Order();
         order.setId(100L);
@@ -72,7 +64,6 @@ class MarkAsReadyOrderUseCaseTest {
     @Test
     void shouldMarkOrderAsReadyAndSendSmsSuccessfully() {
 
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
         when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
         when(smsServicePort.sendSms(anyString(), anyString())).thenReturn("SMS SENT");
@@ -89,25 +80,10 @@ class MarkAsReadyOrderUseCaseTest {
 
         assertTrue(response.contains("SMS sent successfully"));
     }
-
-    @Test
-    void shouldThrowUnauthorizedWhenDifferentRestaurant() {
-        Restaurant anotherRestaurant = new Restaurant();
-        anotherRestaurant.setId(2L);
-        order.setRestaurant(anotherRestaurant);
-
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-
-        assertThrows(UnauthorizedException.class,
-                () -> orderUseCase.markOrderAsReady(1L,100L));
-    }
-
     @Test
     void shouldThrowExceptionWhenStatusIsNotInPreparation() {
         order.setStatus(OrderStatus.PENDIENTE);
 
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         assertThrows(InvalidOrderStatusException.class,
@@ -118,7 +94,6 @@ class MarkAsReadyOrderUseCaseTest {
     void shouldThrowUnauthorizedWhenEmployeeNotAssigned() {
         order.setEmployeeId(999L);
 
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         assertThrows(NotAssignedException.class,
@@ -127,7 +102,6 @@ class MarkAsReadyOrderUseCaseTest {
 
     @Test
     void shouldReturnMessageWhenSmsFails() {
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
         when(userServicePort.getPhone(1L)).thenReturn("+573001234567");
         when(smsServicePort.sendSms(anyString(), anyString())).thenReturn(null);

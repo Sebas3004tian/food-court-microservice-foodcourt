@@ -83,7 +83,7 @@ class MarkAsCancelledOrderUseCaseTest {
 
         String response = orderUseCase.markOrderAsCanceled(1L, 100L);
 
-        assertEquals("SMS failed  (user service error)", response);
+        assertEquals("SMS failed (user service error)", response);
         verify(smsServicePort, never()).sendSms(anyString(), anyString());
     }
 
@@ -97,7 +97,7 @@ class MarkAsCancelledOrderUseCaseTest {
 
         String response = orderUseCase.markOrderAsCanceled(1L, 100L);
 
-        assertEquals("SMS failed SMS failed (sms service error)", response);
+        assertEquals("SMS failed (sms service error)", response);
     }
 
     @Test

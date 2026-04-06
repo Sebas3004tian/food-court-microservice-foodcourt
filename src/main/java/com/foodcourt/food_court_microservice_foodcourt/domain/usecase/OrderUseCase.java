@@ -8,6 +8,7 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.validator.OrderValidator;
+import com.foodcourt.food_court_microservice_foodcourt.domain.validator.RestaurantValidator;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -18,26 +19,19 @@ public class OrderUseCase implements IOrderServicePort {
     private final IOrderDishPersistencePort orderDishPersistencePort;
     private final IDishPersistencePort dishPersistencePort;
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IEmployeePersistencePort employeePersistencePort;
 
     private final ISmsServicePort smsServicePort;
     private final IUserServicePort userServicePort;
     private final ITraceabilityServicePort traceabilityServicePort;
 
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, ISmsServicePort smsServicePort, IUserServicePort userServicePort, ITraceabilityServicePort traceabilityServicePort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, ISmsServicePort smsServicePort, IUserServicePort userServicePort, ITraceabilityServicePort traceabilityServicePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.employeePersistencePort = employeePersistencePort;
         this.smsServicePort = smsServicePort;
         this.userServicePort = userServicePort;
         this.traceabilityServicePort = traceabilityServicePort;
-    }
-
-    private Employee getAuthenticatedEmployee(Long userId) {
-        return employeePersistencePort.findOneByUserId(userId)
-                .orElseThrow(() -> new EmployeeNotFoundException(userId.toString()));
     }
 
     private Order getOrder(Long orderId) {
@@ -105,10 +99,11 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public Page<Order> getOrderPagedByStatus(Long userId, String status, int page, int size) {
+    public Page<Order> getOrderPagedByStatus(Long userId, Long restaurantId, String status, int page, int size) {
         OrderValidator.validatePaginationParams(page, size);
-
-        Employee employee = getAuthenticatedEmployee(userId);
+        if (restaurantPersistencePort.findOneById(restaurantId).isEmpty()){
+            throw new RestaurantNotFoundException("");
+        }
 
         OrderStatus orderStatus;
         try {
@@ -118,7 +113,7 @@ public class OrderUseCase implements IOrderServicePort {
         }
 
         return orderPersistencePort.findByRestaurantIdAndStatusPaged(
-                employee.getRestaurant().getId(),
+                restaurantId,
                 orderStatus,
                 page,
                 size
@@ -127,10 +122,8 @@ public class OrderUseCase implements IOrderServicePort {
 
     @Override
     public void assignOrder(Long userId,Long orderId) {
-        Employee employee = getAuthenticatedEmployee(userId);
         Order order = getOrder(orderId);
 
-        OrderValidator.validateSameRestaurant(employee, order);
         OrderValidator.validateOrderStatus(order, OrderStatus.PENDIENTE);
 
         order.setEmployeeId(userId);
@@ -143,12 +136,10 @@ public class OrderUseCase implements IOrderServicePort {
 
     @Override
     public String markOrderAsReady(Long userId,Long orderId) {
-        Employee employee = getAuthenticatedEmployee(userId);
         Order order = getOrder(orderId);
 
-        OrderValidator.validateSameRestaurant(employee, order);
         OrderValidator.validateOrderStatus(order, OrderStatus.EN_PREPARACION);
-        OrderValidator.validateAssignedEmployee(order, employee);
+        OrderValidator.validateAssignedEmployee(order, userId);
 
         order.markAsReady();
         String pin = order.getSecurityPin();
@@ -176,12 +167,10 @@ public class OrderUseCase implements IOrderServicePort {
 
     @Override
     public void markOrderAsDelivered(Long userId, Long orderId, String pin) {
-        Employee employee = getAuthenticatedEmployee(userId);
         Order order = getOrder(orderId);
 
-        OrderValidator.validateSameRestaurant(employee, order);
         OrderValidator.validateOrderStatus(order, OrderStatus.LISTO);
-        OrderValidator.validateAssignedEmployee(order, employee);
+        OrderValidator.validateAssignedEmployee(order, userId);
         OrderValidator.validateSecurityPin(order,pin);
 
         order.markAsDelivered();

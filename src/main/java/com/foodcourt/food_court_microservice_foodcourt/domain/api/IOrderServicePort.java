@@ -9,7 +9,7 @@ import java.util.List;
 public interface IOrderServicePort {
 
     void createOrder(Long userId, Order order, List<OrderDish> orderDishList);
-    Page<Order> getOrderPagedByStatus(Long userId, String status, int page, int size);
+    Page<Order> getOrderPagedByStatus(Long userId, Long restaurantId, String status, int page, int size);
     void assignOrder(Long userId, Long orderId);
     String markOrderAsReady(Long userId, Long orderId);
     String markOrderAsCanceled(Long userId, Long orderId);

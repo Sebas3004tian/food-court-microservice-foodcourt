@@ -36,7 +36,7 @@ public class OrderRestController {
     }
 
     @PreAuthorize("hasRole('EMPLEADO')")
-    @GetMapping("/status/{status}")
+    @GetMapping("/{restaurantId}/status/{status}")
     @Operation(summary = "Get orders paged with determinate status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders of a status paged"),
@@ -44,11 +44,12 @@ public class OrderRestController {
             @ApiResponse(responseCode = "409", description = "There are no orders created")
     })
     public ResponseEntity<PageResponseDto<OrderResponseDto>> getOrderPagedByStatus(
+            @PathVariable Long restaurantId,
             @PathVariable String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        return ResponseEntity.ok(orderHandler.getOrderPagedByStatus(status,page, size));
+        return ResponseEntity.ok(orderHandler.getOrderPagedByStatus(restaurantId,status,page, size));
     }
 
     @PreAuthorize("hasRole('EMPLEADO')")

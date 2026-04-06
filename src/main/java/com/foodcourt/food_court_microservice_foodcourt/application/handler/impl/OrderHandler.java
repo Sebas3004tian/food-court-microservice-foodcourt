@@ -7,9 +7,12 @@ import com.foodcourt.food_court_microservice_foodcourt.application.handler.IOrde
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IOrderRequestMapper;
 import com.foodcourt.food_court_microservice_foodcourt.application.mapper.IOrderResponseMapper;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderDish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.model.UserRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class OrderHandler implements IOrderHandler {
     private final IOrderResponseMapper orderResponseMapper;
 
     private final IJwtServicePort jwtServicePort;
+    private final IUserServicePort userServicePort;
 
     @Override
     public void createOrder(CreateOrderRequestDto orderRequestDto) {
@@ -36,8 +40,8 @@ public class OrderHandler implements IOrderHandler {
     }
 
     @Override
-    public PageResponseDto<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size) {
-        Page<Order> dishPage = orderServicePort.getOrderPagedByStatus(getAuthUserId(),status,page,size);
+    public PageResponseDto<OrderResponseDto> getOrderPagedByStatus(Long restaurantId, String status, int page, int size) {
+        Page<Order> dishPage = orderServicePort.getOrderPagedByStatus(getAuthUserId(),restaurantId,status,page,size);
 
         PageResponseDto<OrderResponseDto> pageResponseDto = new PageResponseDto<>();
 
@@ -56,7 +60,11 @@ public class OrderHandler implements IOrderHandler {
 
     @Override
     public void assignOrder(Long orderId) {
-        orderServicePort.assignOrder(getAuthUserId(),orderId);
+        Long userId = getAuthUserId();
+        if (!userServicePort.isUserEmployee(userId)) {
+            throw new InvalidUserRoleException(UserRole.EMPLEADO.name());
+        }
+        orderServicePort.assignOrder(userId,orderId);
     }
 
     @Override

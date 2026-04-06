@@ -1,12 +1,11 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IEmployeePersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IOrderPersistencePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.OrderNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,22 +34,18 @@ class GetOrderPagedByStatusUseCaseTest {
     private IJwtServicePort jwtServicePort;
 
     @Mock
-    private IEmployeePersistencePort employeePersistencePort;
+    private IRestaurantPersistencePort restaurantPersistencePort;
 
     @InjectMocks
     private OrderUseCase orderUseCase;
 
     private Restaurant restaurant;
-    private Employee employee;
     private Order order;
 
     @BeforeEach
     void setUp() {
         restaurant = new Restaurant();
         restaurant.setId(1L);
-
-        employee = new Employee();
-        employee.setRestaurant(restaurant);
 
         order = new Order();
         order.setId(1L);
@@ -67,17 +62,16 @@ class GetOrderPagedByStatusUseCaseTest {
 
         Page<Order> pageResult = new PageImpl<>(List.of(order));
 
-        when(employeePersistencePort.findOneByUserId(userId))
-                .thenReturn(Optional.of(employee));
-
         when(orderPersistencePort.findByRestaurantIdAndStatusPaged(
-                restaurant.getId(),
+                1L,
                 OrderStatus.PENDIENTE,
                 page,
                 size
         )).thenReturn(pageResult);
 
-        Page<Order> result = orderUseCase.getOrderPagedByStatus(userId, status, page, size);
+        when(restaurantPersistencePort.findOneById(1L)).thenReturn(Optional.ofNullable(restaurant));
+
+        Page<Order> result = orderUseCase.getOrderPagedByStatus(userId, 1L, status, page, size);
 
         assertNotNull(result);
         assertEquals(1, result.getContent().size());
@@ -98,19 +92,18 @@ class GetOrderPagedByStatusUseCaseTest {
         int size = 10;
 
         Long userId = 10L;
-
-        when(employeePersistencePort.findOneByUserId(userId))
-                .thenReturn(Optional.of(employee));
+        Long restaurantId = restaurant.getId();
 
         when(orderPersistencePort.findByRestaurantIdAndStatusPaged(
-                restaurant.getId(),
+                restaurantId,
                 OrderStatus.PENDIENTE,
                 page,
                 size
         )).thenThrow(new OrderNotFoundException(" "));
 
+        when(restaurantPersistencePort.findOneById(restaurantId)).thenReturn(Optional.ofNullable(restaurant));
         assertThrows(OrderNotFoundException.class, () ->
-                orderUseCase.getOrderPagedByStatus(userId,status, page, size)
+                orderUseCase.getOrderPagedByStatus(userId,restaurantId,status, page, size)
         );
 
         verify(orderPersistencePort).findByRestaurantIdAndStatusPaged(

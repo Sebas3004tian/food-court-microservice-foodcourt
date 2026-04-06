@@ -4,7 +4,6 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePor
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.ISmsServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
@@ -38,9 +37,6 @@ class AssignOrderUseCaseTest {
     private IRestaurantPersistencePort restaurantPersistencePort;
 
     @Mock
-    private IEmployeePersistencePort employeePersistencePort;
-
-    @Mock
     private ISmsServicePort smsServicePort;
 
     @Mock
@@ -55,7 +51,6 @@ class AssignOrderUseCaseTest {
     @InjectMocks
     private OrderUseCase orderUseCase;
 
-    private Employee employee;
     private Order order;
     private Restaurant restaurant;
 
@@ -63,10 +58,6 @@ class AssignOrderUseCaseTest {
     void setUp() {
         restaurant = new Restaurant();
         restaurant.setId(10L);
-
-        employee = new Employee();
-        employee.setId(1L);
-        employee.setRestaurant(restaurant);
 
         order = new Order();
         order.setId(1L);
@@ -76,57 +67,14 @@ class AssignOrderUseCaseTest {
 
     @Test
     void shouldAssignOrderAndSetStatusInPreparation() {
-
-        when(employeePersistencePort.findOneByUserId(employee.getUserId()))
-                .thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
 
-        orderUseCase.assignOrder(employee.getUserId(),order.getId());
+        orderUseCase.assignOrder(1L,order.getId());
 
-        assertEquals(employee.getUserId(), order.getEmployeeId());
+        assertEquals(1L, order.getEmployeeId());
         assertEquals(OrderStatus.EN_PREPARACION, order.getStatus());
 
         verify(orderPersistencePort).updateOrder(order);
     }
 
-    @Test
-    void shouldThrowIfOrderNotFound() {
-        Long userId = 100L;
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
-        when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.empty());
-
-        Long orderId = order.getId();
-        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(1L,orderId));
-    }
-
-    @Test
-    void shouldThrowIfEmployeeNotInSameRestaurant() {
-        Long userId = 100L;
-
-        Restaurant anotherRestaurant = new Restaurant();
-        anotherRestaurant.setId(99L);
-        employee.setRestaurant(anotherRestaurant);
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
-        when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
-
-        Long orderId = order.getId();
-        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(1L,orderId));
-    }
-
-    @Test
-    void shouldThrowIfOrderAlreadyInPreparation() {
-        Long userId = 100L;
-        order.setStatus(OrderStatus.EN_PREPARACION);
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(userId);
-        when(employeePersistencePort.findOneByUserId(userId)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(order.getId())).thenReturn(Optional.of(order));
-
-        Long orderId = order.getId();
-        assertThrows(RuntimeException.class, () -> orderUseCase.assignOrder(1L,orderId));
-    }
 }

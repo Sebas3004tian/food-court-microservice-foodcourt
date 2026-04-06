@@ -6,7 +6,7 @@ import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.
 
 public interface IOrderHandler {
     void createOrder(CreateOrderRequestDto createOrderRequestDto);
-    PageResponseDto<OrderResponseDto> getOrderPagedByStatus(String status, int page, int size);
+    PageResponseDto<OrderResponseDto> getOrderPagedByStatus(Long restaurantId, String status, int page, int size);
     void assignOrder(Long orderId);
     String markOrderAsReady(Long orderId);
     String markOrderAsCanceled(Long orderId);

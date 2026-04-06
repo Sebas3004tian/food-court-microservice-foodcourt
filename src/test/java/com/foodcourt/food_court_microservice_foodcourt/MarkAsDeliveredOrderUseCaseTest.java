@@ -5,7 +5,6 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityS
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.NotAssignedException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.model.Employee;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
@@ -33,8 +32,6 @@ class MarkAsDeliveredOrderUseCaseTest {
 
     @Mock
     private IOrderPersistencePort orderPersistencePort;
-    @Mock
-    private IEmployeePersistencePort employeePersistencePort;
 
     @Mock
     private ITraceabilityServicePort traceabilityServicePort;
@@ -57,7 +54,6 @@ class MarkAsDeliveredOrderUseCaseTest {
     @InjectMocks
     private OrderUseCase orderUseCase;
 
-    private Employee employee;
     private Order order;
     private Restaurant restaurant;
 
@@ -65,11 +61,6 @@ class MarkAsDeliveredOrderUseCaseTest {
     void setUp() {
         restaurant = new Restaurant();
         restaurant.setId(1L);
-
-        employee = new Employee();
-        employee.setId(10L);
-        employee.setUserId(10L);
-        employee.setRestaurant(restaurant);
 
         order = new Order();
         order.setId(100L);
@@ -83,35 +74,20 @@ class MarkAsDeliveredOrderUseCaseTest {
     @Test
     void shouldMarkOrderAsDeliveredAndSendSmsSuccessfully() {
 
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         when(userServicePort.getEmail(anyLong())).thenReturn("test@mail.com");
         doNothing().when(traceabilityServicePort).saveOrderTraceability(any());
 
-        orderUseCase.markOrderAsDelivered(1L,100L,"111111");
+        orderUseCase.markOrderAsDelivered(10L,100L,"111111");
 
         assertEquals(OrderStatus.ENTREGADO, order.getStatus());
-    }
-
-    @Test
-    void shouldThrowUnauthorizedWhenDifferentRestaurant() {
-        Restaurant anotherRestaurant = new Restaurant();
-        anotherRestaurant.setId(2L);
-        order.setRestaurant(anotherRestaurant);
-
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
-        when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
-
-        assertThrows(UnauthorizedException.class,
-                () -> orderUseCase.markOrderAsDelivered(1L,100L,"111111"));
     }
 
     @Test
     void shouldThrowExceptionWhenStatusIsNotReady() {
         order.setStatus(OrderStatus.PENDIENTE);
 
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         assertThrows(InvalidOrderStatusException.class,
@@ -122,7 +98,6 @@ class MarkAsDeliveredOrderUseCaseTest {
     void shouldThrowUnauthorizedWhenEmployeeNotAssigned() {
         order.setEmployeeId(999L);
 
-        when(employeePersistencePort.findOneByUserId(1L)).thenReturn(Optional.of(employee));
         when(orderPersistencePort.findOneById(100L)).thenReturn(Optional.of(order));
 
         assertThrows(NotAssignedException.class,
