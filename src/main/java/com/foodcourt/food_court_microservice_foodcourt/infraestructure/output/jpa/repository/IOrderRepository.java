@@ -2,16 +2,22 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.j
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.OrderEntity;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 public interface IOrderRepository extends JpaRepository<OrderEntity, Long> {
     boolean existsByClientIdAndStatusIn(Long clientId, List<OrderStatus> statusList);
-    List<OrderEntity> findByRestaurantIdAndStatus(
+    Page<OrderEntity> findByRestaurantIdAndStatus(
             Long restaurantId,
             OrderStatus status,
             Pageable pageable
     );
+
+    @Query("SELECT o.id FROM OrderEntity o WHERE o.restaurant.id = :restaurantId")
+    List<Long> findOrderIdsByRestaurantId(@Param("restaurantId") Long restaurantId);
 }

@@ -1,5 +1,7 @@
 package com.foodcourt.food_court_microservice_foodcourt;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.ITraceabilityServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IUserServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
@@ -7,7 +9,8 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderDish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -21,7 +24,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class CreateOrderUseCaseTest {
 
@@ -38,7 +40,10 @@ class CreateOrderUseCaseTest {
     private IRestaurantPersistencePort restaurantPersistencePort;
 
     @Mock
-    private IJwtServicePort jwtServicePort;
+    private ITraceabilityServicePort traceabilityServicePort;
+
+    @Mock
+    private IUserServicePort userServicePort;
 
     @InjectMocks
     private OrderUseCase orderUseCase;
@@ -69,15 +74,13 @@ class CreateOrderUseCaseTest {
     @Test
     void shouldCreateOrderSuccessfully() {
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
-
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
-        when(dishPersistencePort.findOneById(10L))
+        when(dishPersistencePort.findOneById(dish.getId()))
                 .thenReturn(Optional.of(dish));
 
         when(orderPersistencePort.createOrder(any(Order.class)))
@@ -87,27 +90,25 @@ class CreateOrderUseCaseTest {
                     return o;
                 });
 
-        orderUseCase.createOrder(order, List.of(orderDish));
+        orderUseCase.createOrder(1L,order, List.of(orderDish));
 
         verify(orderPersistencePort).createOrder(any(Order.class));
-        verify(orderDishPersistencePort).createOrderDishList(anyList(),any());
+        verify(orderDishPersistencePort).createOrderDishList(anyList(), any());
     }
 
     @Test
     void shouldThrowExceptionWhenRestaurantNotFound() {
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
-
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.empty());
 
         List<OrderDish> dishes = List.of(orderDish);
 
-        assertThrows(NoDataFoundException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+        assertThrows(RestaurantNotFoundException.class,
+                () -> orderUseCase.createOrder(1L,order, dishes));
 
         verify(orderPersistencePort, never()).createOrder(any());
     }
@@ -115,15 +116,13 @@ class CreateOrderUseCaseTest {
     @Test
     void shouldThrowExceptionWhenDishNotFound() {
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
-
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
-        when(dishPersistencePort.findOneById(10L))
+        when(dishPersistencePort.findOneById(dish.getId()))
                 .thenReturn(Optional.empty());
 
         when(orderPersistencePort.createOrder(any(Order.class)))
@@ -131,14 +130,12 @@ class CreateOrderUseCaseTest {
 
         List<OrderDish> dishes = List.of(orderDish);
 
-        assertThrows(NoDataFoundException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+        assertThrows(DishNotFoundException.class,
+                () -> orderUseCase.createOrder(1L,order, dishes));
     }
 
     @Test
     void shouldThrowExceptionWhenClientHasActiveOrder() {
-
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
 
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(true);
@@ -146,7 +143,7 @@ class CreateOrderUseCaseTest {
         List<OrderDish> dishes = List.of(orderDish);
 
         assertThrows(ClientHasActiveOrderException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+                () -> orderUseCase.createOrder(1L,order, dishes));
 
         verify(orderPersistencePort, never()).createOrder(any());
     }
@@ -154,12 +151,10 @@ class CreateOrderUseCaseTest {
     @Test
     void shouldThrowExceptionWhenAmountIsInvalid() {
 
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(99L);
-
         when(orderPersistencePort.existsByClientIdAndStatusIn(anyLong(), anyList()))
                 .thenReturn(false);
 
-        when(restaurantPersistencePort.findOneById(1L))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
         orderDish.setAmount(0);
@@ -167,6 +162,6 @@ class CreateOrderUseCaseTest {
         List<OrderDish> dishes = List.of(orderDish);
 
         assertThrows(IllegalArgumentException.class,
-                () -> orderUseCase.createOrder(order, dishes));
+                () -> orderUseCase.createOrder(1L,order, dishes));
     }
 }

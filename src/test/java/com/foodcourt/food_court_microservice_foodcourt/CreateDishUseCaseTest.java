@@ -5,10 +5,11 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.ICategoryPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,7 +21,6 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class CreateDishUseCaseTest {
 
@@ -39,25 +39,25 @@ class CreateDishUseCaseTest {
     @InjectMocks
     private DishUseCase dishUseCase;
 
-    @Test
-    void shouldCreateDishSuccessfully() {
+    private Category category;
+    private Restaurant restaurant;
+    private Dish dish;
 
-        Long ownerId = 10L;
-        Long restaurantId = 1L;
+    @BeforeEach
+    void setUp() {
+        category = new Category(1L, "POSTRES");
 
-        Category category = new Category(1L, "POSTRES");
-
-        Restaurant restaurant = new Restaurant(
-                restaurantId,
+        restaurant = new Restaurant(
+                1L,
                 "Restaurante Test",
                 123456L,
                 "Calle 123",
                 "123456789",
                 "logo.png",
-                ownerId
+                10L
         );
 
-        Dish dish = new Dish(
+        dish = new Dish(
                 null,
                 "Helado",
                 new BigDecimal("1000"),
@@ -67,17 +67,20 @@ class CreateDishUseCaseTest {
                 restaurant,
                 category
         );
+    }
 
-        when(jwtServicePort.getAuthenticatedUserId())
-                .thenReturn(ownerId);
+    @Test
+    void shouldCreateDishSuccessfully() {
 
-        when(restaurantPersistencePort.findOneById(restaurantId))
+        Long ownerId = 10L;
+
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
-        when(categoryPersistencePort.findOneById(1L))
+        when(categoryPersistencePort.findOneById(category.getId()))
                 .thenReturn(Optional.of(category));
 
-        dishUseCase.createDish(dish);
+        dishUseCase.createDish(ownerId,dish);
 
         verify(dishPersistencePort).createDish(dish);
     }
@@ -85,37 +88,16 @@ class CreateDishUseCaseTest {
     @Test
     void shouldThrowExceptionWhenUserIsNotOwner() {
 
-        Long ownerId = 10L;
         Long otherUserId = 99L;
-        Long restaurantId = 1L;
 
-        Restaurant restaurant = new Restaurant(
-                restaurantId,
-                "Restaurante Test",
-                123456L,
-                "Calle 123",
-                "123456789",
-                "logo.png",
-                ownerId
-        );
-
-        Category category = new Category(1L, "POSTRES");
-
-        Dish dish = new Dish();
-        dish.setRestaurant(restaurant);
-        dish.setCategory(category);
-
-        when(jwtServicePort.getAuthenticatedUserId())
-                .thenReturn(otherUserId);
-
-        when(restaurantPersistencePort.findOneById(restaurantId))
+        when(restaurantPersistencePort.findOneById(restaurant.getId()))
                 .thenReturn(Optional.of(restaurant));
 
-        when(categoryPersistencePort.findOneById(1L))
+        when(categoryPersistencePort.findOneById(category.getId()))
                 .thenReturn(Optional.of(category));
 
         assertThrows(UnauthorizedException.class, () ->
-                dishUseCase.createDish(dish)
+                dishUseCase.createDish(otherUserId,dish)
         );
 
         verify(dishPersistencePort, never()).createDish(any());
@@ -123,28 +105,21 @@ class CreateDishUseCaseTest {
 
     @Test
     void shouldThrowExceptionWhenRestaurantNotFound() {
-        Long restaurantId = 1L;
 
-        Category category = new Category(1L, "POSTRES");
+        Long ownerId = 10L;
 
-        Restaurant restaurant = new Restaurant();
-        restaurant.setId(restaurantId);
+        dish.setRestaurant(new Restaurant());
 
-        Dish dish = new Dish();
-        dish.setRestaurant(restaurant);
-        dish.setCategory(category);
-
-        when(categoryPersistencePort.findOneById(1L))
+        when(categoryPersistencePort.findOneById(category.getId()))
                 .thenReturn(Optional.of(category));
 
-        when(restaurantPersistencePort.findOneById(restaurantId))
+        when(restaurantPersistencePort.findOneById(1L))
                 .thenReturn(Optional.empty());
 
         assertThrows(RuntimeException.class, () ->
-                dishUseCase.createDish(dish)
+                dishUseCase.createDish(ownerId,dish)
         );
 
         verify(dishPersistencePort, never()).createDish(any());
     }
-
 }

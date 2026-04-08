@@ -3,17 +3,19 @@ package com.foodcourt.food_court_microservice_foodcourt;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
@@ -24,10 +26,10 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
     @InjectMocks
     private DishUseCase dishUseCase;
 
-    private final Long RESTAURANT_ID = 1L;
-    private final Long CATEGORY_ID = 2L;
-    private final int PAGE = 0;
-    private final int SIZE = 10;
+    private static final Long RESTAURANT_ID = 1L;
+    private static final Long CATEGORY_ID = 2L;
+    private static final int PAGE = 0;
+    private static final int SIZE = 10;
 
     private Dish dish;
 
@@ -41,14 +43,16 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
     @Test
     void shouldReturnDishesWhenCategoryIsProvided() {
 
+        Page<Dish> pageResult = new PageImpl<>(List.of(dish));
+
         when(dishPersistencePort.findByRestaurantAndCategoryPaged(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE))
-                .thenReturn(List.of(dish));
+                .thenReturn(pageResult);
 
-        List<Dish> result = dishUseCase.getDishesPagedByRestaurant(
+        Page<Dish> result = dishUseCase.getDishesPagedByRestaurant(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE);
 
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
         verify(dishPersistencePort).findByRestaurantAndCategoryPaged(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE);
@@ -57,14 +61,16 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
     @Test
     void shouldReturnDishesWhenCategoryIsNull() {
 
+        Page<Dish> pageResult = new PageImpl<>(List.of(dish));
+
         when(dishPersistencePort.findByRestaurantPaged(
                 RESTAURANT_ID, PAGE, SIZE))
-                .thenReturn(List.of(dish));
+                .thenReturn(pageResult);
 
-        List<Dish> result = dishUseCase.getDishesPagedByRestaurant(
+        Page<Dish> result = dishUseCase.getDishesPagedByRestaurant(
                 RESTAURANT_ID, null, PAGE, SIZE);
 
-        assertEquals(1, result.size());
+        assertEquals(1, result.getContent().size());
 
         verify(dishPersistencePort).findByRestaurantPaged(
                 RESTAURANT_ID, PAGE, SIZE);
@@ -75,9 +81,9 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
 
         when(dishPersistencePort.findByRestaurantAndCategoryPaged(
                 RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE))
-                .thenThrow(new NoDataFoundException("No dishes"));
+                .thenThrow(new DishNotFoundException(""));
 
-        assertThrows(NoDataFoundException.class, () ->
+        assertThrows(DishNotFoundException.class, () ->
                 dishUseCase.getDishesPagedByRestaurant(
                         RESTAURANT_ID, CATEGORY_ID, PAGE, SIZE)
         );
@@ -88,9 +94,9 @@ class GetAllDishesByRestaurantsAndCategoriesPagedUseCaseTest {
 
         when(dishPersistencePort.findByRestaurantPaged(
                 RESTAURANT_ID, PAGE, SIZE))
-                .thenThrow(new NoDataFoundException("No dishes"));
+                .thenThrow(new DishNotFoundException("No dishes"));
 
-        assertThrows(NoDataFoundException.class, () ->
+        assertThrows(DishNotFoundException.class, () ->
                 dishUseCase.getDishesPagedByRestaurant(
                         RESTAURANT_ID, null, PAGE, SIZE)
         );

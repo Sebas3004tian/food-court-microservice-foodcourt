@@ -4,10 +4,11 @@ import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishStat
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Dish;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IDishPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IJwtServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.DishNotFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,9 +41,9 @@ class EnableOrDisableDishUseCaseTest {
     private Dish dish;
     private Restaurant restaurant;
 
-    private final Long DISH_ID = 1L;
-    private final Long RESTAURANT_ID = 10L;
-    private final Long OWNER_ID = 100L;
+    private static final Long DISH_ID = 1L;
+    private static final Long RESTAURANT_ID = 10L;
+    private static final Long OWNER_ID = 100L;
 
     @BeforeEach
     void setUp() {
@@ -53,7 +54,6 @@ class EnableOrDisableDishUseCaseTest {
         dish = new Dish();
         dish.setId(DISH_ID);
         dish.setActive(false);
-
         dish.setRestaurant(restaurant);
     }
 
@@ -63,9 +63,8 @@ class EnableOrDisableDishUseCaseTest {
 
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(OWNER_ID);
 
-        dishUseCase.enableOrDisableDish(DISH_ID, true);
+        dishUseCase.enableOrDisableDish(OWNER_ID,DISH_ID, true);
 
         assertTrue(dish.isActive());
         verify(dishPersistencePort).updateDish(dish);
@@ -75,8 +74,8 @@ class EnableOrDisableDishUseCaseTest {
     void shouldThrowExceptionWhenDishNotFound() {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.empty());
 
-        assertThrows(NoDataFoundException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+        assertThrows(DishNotFoundException.class,
+                () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -86,8 +85,8 @@ class EnableOrDisableDishUseCaseTest {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.empty());
 
-        assertThrows(NoDataFoundException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+        assertThrows(RestaurantNotFoundException.class,
+                () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -96,10 +95,9 @@ class EnableOrDisableDishUseCaseTest {
     void shouldThrowExceptionWhenUserIsNotOwner() {
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(999L); // otro usuario
 
         assertThrows(UnauthorizedException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+                () -> dishUseCase.enableOrDisableDish(1L,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -110,10 +108,9 @@ class EnableOrDisableDishUseCaseTest {
 
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(OWNER_ID);
 
         assertThrows(DishStatusAlreadySetException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, true));
+                () -> dishUseCase.enableOrDisableDish(OWNER_ID,DISH_ID, true));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }
@@ -124,10 +121,9 @@ class EnableOrDisableDishUseCaseTest {
 
         when(dishPersistencePort.findOneById(DISH_ID)).thenReturn(Optional.of(dish));
         when(restaurantPersistencePort.findOneById(RESTAURANT_ID)).thenReturn(Optional.of(restaurant));
-        when(jwtServicePort.getAuthenticatedUserId()).thenReturn(OWNER_ID);
 
         assertThrows(DishStatusAlreadySetException.class,
-                () -> dishUseCase.enableOrDisableDish(DISH_ID, false));
+                () -> dishUseCase.enableOrDisableDish(OWNER_ID,DISH_ID, false));
 
         verify(dishPersistencePort, never()).updateDish(any());
     }

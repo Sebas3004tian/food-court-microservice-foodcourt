@@ -3,6 +3,7 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.re
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.UpdateDishRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.DishResponseDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.PageResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IDishHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/dish")
 @RequiredArgsConstructor
@@ -23,7 +22,7 @@ public class DishRestController {
 
     private final IDishHandler dishHandler;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PreAuthorize("hasRole('PROPIETARIO')")
     @PostMapping("/")
     @Operation(summary = "Create an dish")
     @ApiResponses(value = {
@@ -37,7 +36,7 @@ public class DishRestController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PreAuthorize("hasRole('PROPIETARIO')")
     @PutMapping("/{dishId}")
     @Operation(summary = "Update an dish")
     @ApiResponses(value = {
@@ -50,7 +49,7 @@ public class DishRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'PROPIETARIO')")
+    @PreAuthorize("hasRole('PROPIETARIO')")
     @PatchMapping("/{dishId}/active")
     @Operation(summary = "Enable or disable  dish status")
     @ApiResponses(value = {
@@ -63,7 +62,7 @@ public class DishRestController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     @GetMapping("/restaurant/{restaurantId}")
     @Operation(summary = "Get all available dishes of a restaurant ")
     @ApiResponses(value = {
@@ -71,7 +70,7 @@ public class DishRestController {
             @ApiResponse(responseCode = "403", description = "Access Denied"),
             @ApiResponse(responseCode = "409", description = "There are no dishes created")
     })
-    public ResponseEntity<List<DishResponseDto>> getAllPagedRestaurants(
+    public ResponseEntity<PageResponseDto<DishResponseDto>> getAllPagedRestaurants(
             @PathVariable Long restaurantId,
             @RequestParam(required = false) Long categoryId,
             @RequestParam(defaultValue = "0") int page,

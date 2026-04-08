@@ -1,51 +1,54 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidUserRoleException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.RestaurantNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Restaurant;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IRestaurantPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IUserExternalPort;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.AlreadyExistsException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.validator.RestaurantValidator;
+import org.springframework.data.domain.Page;
 
-import java.util.List;
 
 public class RestaurantUseCase  implements IRestaurantServicePort {
 
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IUserExternalPort userExternalPort;
 
 
-    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort, IUserExternalPort userExternalPort) {
+    public RestaurantUseCase(IRestaurantPersistencePort restaurantPersistencePort) {
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.userExternalPort = userExternalPort;
     }
 
     @Override
     public void createRestaurant(Restaurant restaurant){
 
-        if (restaurantPersistencePort.findOneByNit(restaurant.getNit()).isPresent()) {
-            throw new AlreadyExistsException("Restaurant NIT already exists");
-        }
+        RestaurantValidator.validateNameNotExists(
+                restaurantPersistencePort.findOneByName(restaurant.getName()).isPresent()
+        );
 
-        if (restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()) {
-            throw new AlreadyExistsException("Restaurant phone number already exists");
-        }
+        RestaurantValidator.validateNitNotExists(
+                restaurantPersistencePort.findOneByNit(restaurant.getNit()).isPresent()
+        );
 
-        boolean isOwner = userExternalPort.isUserOwner(restaurant.getOwnerId());
-        if (!isOwner) {
-            throw new InvalidUserRoleException("The user does not exist or does not have the role of PROPIETARIO");
-        }
+        RestaurantValidator.validatePhoneNotExists(
+                restaurantPersistencePort.findOneByPhoneNumber(restaurant.getPhoneNumberRestaurant()).isPresent()
+        );
+
+        RestaurantValidator.validateOwnerAlreadyHaveRestaurant(
+                restaurantPersistencePort.findRestaurantId(restaurant.getOwnerId()).isPresent()
+        );
 
         restaurantPersistencePort.createRestaurant(restaurant);
     }
 
     @Override
-    public List<Restaurant> getAllPagedRestaurants(int page, int size) {
-
-        if (page < 0 || size <= 0) {
-            throw new IllegalArgumentException("Invalid pagination params");
-        }
+    public Page<Restaurant> getAllPagedRestaurants(int page, int size) {
+        RestaurantValidator.validatePaginationParams(page, size);
 
         return restaurantPersistencePort.findAllPaged(page, size);
+    }
+
+    @Override
+    public Long getRestaurantId(Long authenticatedUserId) {
+        return restaurantPersistencePort.findRestaurantId(authenticatedUserId)
+                .orElseThrow(() -> new RestaurantNotFoundException(""));
     }
 }

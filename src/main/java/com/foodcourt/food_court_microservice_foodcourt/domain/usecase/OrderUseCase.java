@@ -1,12 +1,11 @@
 package com.foodcourt.food_court_microservice_foodcourt.domain.usecase;
 
 import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ClientHasActiveOrderException;
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.InvalidOrderStatusException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.UnauthorizedException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.validator.OrderValidator;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -16,56 +15,52 @@ public class OrderUseCase implements IOrderServicePort {
     private final IOrderDishPersistencePort orderDishPersistencePort;
     private final IDishPersistencePort dishPersistencePort;
     private final IRestaurantPersistencePort restaurantPersistencePort;
-    private final IEmployeePersistencePort employeePersistencePort;
 
-    private final IJwtServicePort jwtServicePort;
-
-    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort, IEmployeePersistencePort employeePersistencePort, IJwtServicePort jwtServicePort) {
+    public OrderUseCase(IOrderPersistencePort orderPersistencePort, IOrderDishPersistencePort orderDishPersistencePort, IDishPersistencePort dishPersistencePort, IRestaurantPersistencePort restaurantPersistencePort) {
         this.orderPersistencePort = orderPersistencePort;
         this.orderDishPersistencePort = orderDishPersistencePort;
         this.dishPersistencePort = dishPersistencePort;
         this.restaurantPersistencePort = restaurantPersistencePort;
-        this.employeePersistencePort = employeePersistencePort;
-        this.jwtServicePort = jwtServicePort;
     }
 
     @Override
-    public void createOrder(Order order, List<OrderDish> orderDishList) {
-        Long clientId = jwtServicePort.getAuthenticatedUserId();
+    public Order getOrderById(Long orderId) {
+        return orderPersistencePort.findOneById(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId.toString()));
+    }
 
-        validateClientHasNoActiveOrders(clientId);
+    @Override
+    public Order createOrder(Long clientId, Order order, List<OrderDish> orderDishList) {
+
+        boolean hasActiveOrders = orderPersistencePort.existsByClientIdAndStatusIn(clientId,
+                List.of(OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO));
+        OrderValidator.validateClientHasNoActiveOrders(hasActiveOrders);
 
         Long restaurantId = order.getRestaurant().getId();
         Restaurant restaurant = restaurantPersistencePort.findOneById(restaurantId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Restaurant with id "+restaurantId));
+                .orElseThrow(() -> new RestaurantNotFoundException(restaurantId.toString()));
 
-        Order orderToSave = Order.createPendingOrder(order,clientId, restaurant, "Pin ultra secret");
-
+        Order orderToSave = Order.createPendingOrder(order, clientId, restaurant);
         Order persistedOrder = orderPersistencePort.createOrder(orderToSave);
 
         List<OrderDish> preparedDishes = prepareDishes(restaurantId, orderDishList);
+        orderDishPersistencePort.createOrderDishList(preparedDishes, persistedOrder);
 
-        orderDishPersistencePort.createOrderDishList(preparedDishes,persistedOrder);
+        return persistedOrder;
     }
 
     @Override
-    public List<Order> getOrderPagedByStatus(String status, int page, int size) {
-
-        if (page < 0 || size <= 0) {
-            throw new IllegalArgumentException("Invalid pagination params");
+    public Page<Order> getOrderPagedByStatus(Long userId, Long restaurantId, String status, int page, int size) {
+        OrderValidator.validatePaginationParams(page, size);
+        if (restaurantPersistencePort.findOneById(restaurantId).isEmpty()){
+            throw new RestaurantNotFoundException("");
         }
 
-        Long userId  = jwtServicePort.getAuthenticatedUserId();
-        Employee employee = employeePersistencePort.findOneByUserId(userId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id "+userId));
-        Long restaurantId = employee.getRestaurant().getId();
-
         OrderStatus orderStatus;
-
         try {
             orderStatus = OrderStatus.valueOf(status.toUpperCase());
-        } catch (IllegalArgumentException | NullPointerException e) {
-            throw new InvalidOrderStatusException("Invalid order status: " + status);
+        } catch (Exception e) {
+            throw new InvalidOrderStatusException(status);
         }
 
         return orderPersistencePort.findByRestaurantIdAndStatusPaged(
@@ -77,37 +72,48 @@ public class OrderUseCase implements IOrderServicePort {
     }
 
     @Override
-    public void assignOrder(Long orderId) {
-        Long userId = jwtServicePort.getAuthenticatedUserId();
+    public Order assignOrder(Long userId,Order order) {
 
-        Employee employee = employeePersistencePort.findOneByUserId(userId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Employee with id "+userId));
+        OrderValidator.validateOrderStatus(order, OrderStatus.PENDIENTE);
 
-        Order order = orderPersistencePort.findOneById(orderId)
-                .orElseThrow(() -> new NoDataFoundException("Not found the Order with id "+orderId));
-
-        if (!order.getRestaurant().getId().equals(employee.getRestaurant().getId())) {
-            throw new UnauthorizedException("You are not a employee of the restaurant order");
-        }
-
-        if (order.getStatus() != OrderStatus.PENDIENTE) {
-            throw new InvalidOrderStatusException("The order have to has PENDING status");
-        }
-
-        order.setEmployeeId(employee.getId());
-
+        order.setEmployeeId(userId);
         order.setStatus(OrderStatus.EN_PREPARACION);
 
-        orderPersistencePort.updateOrder(order);
+        return orderPersistencePort.updateOrder(order);
     }
 
-    private void validateClientHasNoActiveOrders(Long clientId){
-        boolean hasActiveOrders = orderPersistencePort.existsByClientIdAndStatusIn(clientId,
-                List.of(OrderStatus.PENDIENTE, OrderStatus.EN_PREPARACION, OrderStatus.LISTO));
+    @Override
+    public String markOrderAsReady(Long userId,Order order) {
+        OrderValidator.validateOrderStatus(order, OrderStatus.EN_PREPARACION);
+        OrderValidator.validateAssignedEmployee(order, userId);
 
-        if (hasActiveOrders) {
-            throw new ClientHasActiveOrderException("Client cannot create a new order while having an active order");
+        order.markAsReady();
+        String pin = order.getSecurityPin();
+        orderPersistencePort.updateOrder(order);
+        return pin;
+    }
+
+    @Override
+    public boolean markOrderAsCanceled(Long clientId, Order order) {
+        OrderValidator.validateSameClient(clientId, order);
+        if(order.getStatus() != OrderStatus.PENDIENTE) {
+            return false;
+        } else {
+            order.markAsCanceled();
+            orderPersistencePort.updateOrder(order);
+            return true;
         }
+    }
+
+    @Override
+    public void markOrderAsDelivered(Long userId,Order order, String pin) {
+
+        OrderValidator.validateOrderStatus(order, OrderStatus.LISTO);
+        OrderValidator.validateAssignedEmployee(order, userId);
+        OrderValidator.validateSecurityPin(order,pin);
+
+        order.markAsDelivered();
+        orderPersistencePort.updateOrder(order);
     }
 
     private List<OrderDish> prepareDishes(Long restaurantId, List<OrderDish> orderDishList) {
@@ -120,7 +126,7 @@ public class OrderUseCase implements IOrderServicePort {
 
             Long dishId = orderDish.getDish().getId();
             Dish dish = dishPersistencePort.findOneById(dishId)
-                    .orElseThrow(() -> new NoDataFoundException("Not found the Dish with id "+dishId));
+                    .orElseThrow(() -> new DishNotFoundException(dishId.toString()));
 
             if (!dish.getRestaurant().getId().equals(restaurantId)) {
                 throw new IllegalArgumentException("All dishes must belong to the same restaurant");
@@ -131,5 +137,15 @@ public class OrderUseCase implements IOrderServicePort {
         }
         return orderDishList;
     }
+
+    @Override
+    public List<Long> getOrdersIdsByRestaurantId(Long restaurantId) {
+        List<Long> orderIds = orderPersistencePort.findOrdersIdsByRestaurantId(restaurantId);
+        if ( orderIds.isEmpty()){
+            throw new RestaurantNotFoundException("");
+        }
+        return orderIds;
+    }
+
 
 }

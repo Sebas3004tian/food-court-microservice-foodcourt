@@ -1,5 +1,6 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.security;
 
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.IJwtServicePort;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -16,10 +17,10 @@ import java.util.List;
 @Component
 public class JwtAutorizationFilter extends OncePerRequestFilter {
 
-    private final TokenUtils tokenUtils;
+    private final IJwtServicePort jwtService;
 
-    public JwtAutorizationFilter(TokenUtils tokenUtils) {
-        this.tokenUtils = tokenUtils;
+    public JwtAutorizationFilter(IJwtServicePort jwtService) {
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -34,7 +35,7 @@ public class JwtAutorizationFilter extends OncePerRequestFilter {
             String token = bearerToken.replace("Bearer ", "");
 
             try {
-                var claims = tokenUtils.extractClaims(token);
+                var claims = jwtService.extractClaims(token);
 
                 String email = claims.getSubject();
                 String role = claims.get("role", String.class);

@@ -3,19 +3,19 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.j
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.Order;
 import com.foodcourt.food_court_microservice_foodcourt.domain.model.OrderStatus;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.IOrderPersistencePort;
-import com.foodcourt.food_court_microservice_foodcourt.infraestructure.exception.NoDataFoundException;
+import com.foodcourt.food_court_microservice_foodcourt.domain.exception.OrderNotFoundException;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.OrderDishEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.entity.OrderEntity;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.IOrderEntityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IOrderDishRepository;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.IOrderRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 
 @RequiredArgsConstructor
@@ -37,39 +37,43 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
     }
 
     @Override
-    public List<Order> findByRestaurantIdAndStatusPaged(Long restaurantId, OrderStatus status, int page, int size) {
+    public Page<Order> findByRestaurantIdAndStatusPaged(Long restaurantId, OrderStatus status, int page, int size) {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        List<OrderEntity> orderEntityList =
+        Page<OrderEntity> orderEntityPage =
                 orderRepository.findByRestaurantIdAndStatus(restaurantId, status, pageable);
 
-        if (orderEntityList.isEmpty()) {
-            throw new NoDataFoundException("No orders found for this restaurant with this status");
+        if (orderEntityPage.isEmpty()) {
+            throw new OrderNotFoundException("");
         }
 
-        List<Long> orderIds = new ArrayList<>();
-        for (OrderEntity orderEntity : orderEntityList) {
-            orderIds.add(orderEntity.getId());
+        List<OrderEntity> orders = orderEntityPage.getContent();
+
+        List<Long> orderIds = new ArrayList<>(orders.size());
+        Map<Long, OrderEntity> orderMap = new HashMap<>(orders.size());
+
+        for (OrderEntity order : orders) {
+            orderIds.add(order.getId());
+            order.setOrderDishes(new ArrayList<>());
+            orderMap.put(order.getId(), order);
         }
 
-        List<OrderDishEntity> orderDishEntityList =
+        List<OrderDishEntity> orderDishes =
                 orderDishRepository.findByOrderIdsWithDish(orderIds);
 
-        for (OrderEntity orderEntity : orderEntityList) {
-
-            List<OrderDishEntity> dishesForOrder = new ArrayList<>();
-
-            for (OrderDishEntity orderDishEntity : orderDishEntityList) {
-                if (orderDishEntity.getOrder().getId().equals(orderEntity.getId())) {
-                    dishesForOrder.add(orderDishEntity);
-                }
+        for (OrderDishEntity od : orderDishes) {
+            OrderEntity order = orderMap.get(od.getOrder().getId());
+            if (order != null) {
+                order.getOrderDishes().add(od);
             }
-
-            orderEntity.setOrderDishes(dishesForOrder);
         }
 
-        return orderEntityMapper.toOrderList(orderEntityList);
+        return new PageImpl<>(
+                orderEntityMapper.toOrderList(orders),
+                orderEntityPage.getPageable(),
+                orderEntityPage.getTotalElements()
+        );
     }
 
     @Override
@@ -81,6 +85,11 @@ public class OrderJpaAdapter implements IOrderPersistencePort {
     @Override
     public Order updateOrder(Order order) {
         return saveOrder(order);
+    }
+
+    @Override
+    public List<Long> findOrdersIdsByRestaurantId(Long restaurantId) {
+        return orderRepository.findOrderIdsByRestaurantId(restaurantId);
     }
 
     private Order saveOrder(Order order) {

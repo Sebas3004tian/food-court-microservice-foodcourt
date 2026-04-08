@@ -1,7 +1,5 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.exceptionhandler;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.exception.ExternalServiceException;
-
 public enum ExceptionResponse {
 
     ACCESS_DENIED("You do not have permission to access this resource"),

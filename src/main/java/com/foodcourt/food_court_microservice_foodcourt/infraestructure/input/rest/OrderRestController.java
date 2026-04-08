@@ -2,6 +2,7 @@ package com.foodcourt.food_court_microservice_foodcourt.infraestructure.input.re
 
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.request.CreateOrderRequestDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.OrderResponseDto;
+import com.foodcourt.food_court_microservice_foodcourt.application.dto.response.PageResponseDto;
 import com.foodcourt.food_court_microservice_foodcourt.application.handler.IOrderHandler;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -13,8 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/order")
 @RequiredArgsConstructor
@@ -22,7 +21,7 @@ public class OrderRestController {
 
     private final IOrderHandler orderHandler;
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'CLIENTE')")
+    @PreAuthorize("hasRole('CLIENTE')")
     @PostMapping("/")
     @Operation(summary = "Create an order")
     @ApiResponses(value = {
@@ -36,23 +35,24 @@ public class OrderRestController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
-    @GetMapping("/status/{status}")
+    @PreAuthorize("hasRole('EMPLEADO')")
+    @GetMapping("/{restaurantId}/status/{status}")
     @Operation(summary = "Get orders paged with determinate status")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Orders of a status paged"),
             @ApiResponse(responseCode = "403", description = "Access Denied"),
             @ApiResponse(responseCode = "409", description = "There are no orders created")
     })
-    public ResponseEntity<List<OrderResponseDto>> getOrderPagedByStatus(
+    public ResponseEntity<PageResponseDto<OrderResponseDto>> getOrderPagedByStatus(
+            @PathVariable Long restaurantId,
             @PathVariable String status,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
-        return ResponseEntity.ok(orderHandler.getOrderPagedByStatus(status,page, size));
+        return ResponseEntity.ok(orderHandler.getOrderPagedByStatus(restaurantId,status,page, size));
     }
 
-    @PreAuthorize("hasAnyRole('ADMIN', 'EMPLEADO')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PatchMapping("/{orderId}/assign")
     @Operation(summary = "Assign an Order")
     @ApiResponses(value = {
@@ -64,5 +64,47 @@ public class OrderRestController {
     public ResponseEntity<Void> assignOrder(@PathVariable Long orderId){
         orderHandler.assignOrder(orderId);
         return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasRole('EMPLEADO')")
+    @PatchMapping("/{orderId}/ready")
+    @Operation(summary = "Mark an Order as READY")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Status changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with mark as ready the order")
+    })
+    public ResponseEntity<String> markOrderAsReady(@PathVariable Long orderId){
+        return ResponseEntity.ok(orderHandler.markOrderAsReady(orderId));
+    }
+
+    @PreAuthorize("hasRole('EMPLEADO')")
+    @PatchMapping("/{orderId}/delivered")
+    @Operation(summary = "Mark an Order as DELIVERED")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Status changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with mark as delivered the order")
+    })
+    public ResponseEntity<String> markOrderAsDelivered(@PathVariable Long orderId,
+           @RequestParam() String pin
+    ){
+        orderHandler.markOrderAsDelivered(orderId, pin);
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasRole('CLIENTE')")
+    @PatchMapping("/{orderId}/canceled")
+    @Operation(summary = "Mark an Order as CANCELED")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Status changed successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid data"),
+            @ApiResponse(responseCode = "403", description = "Access Denied"),
+            @ApiResponse(responseCode = "409", description = "Conflicts with mark as canceled the order")
+    })
+    public ResponseEntity<String> markOrderAsCanceled(@PathVariable Long orderId){
+        return ResponseEntity.ok(orderHandler.markOrderAsCanceled(orderId));
     }
 }

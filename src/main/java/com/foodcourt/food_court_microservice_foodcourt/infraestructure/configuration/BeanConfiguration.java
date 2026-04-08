@@ -1,16 +1,17 @@
 package com.foodcourt.food_court_microservice_foodcourt.infraestructure.configuration;
 
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IDishServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IEmployeeServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IOrderServicePort;
-import com.foodcourt.food_court_microservice_foodcourt.domain.api.IRestaurantServicePort;
+import com.foodcourt.food_court_microservice_foodcourt.domain.api.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.spi.*;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.DishUseCase;
-import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.EmployeeUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.OrderUseCase;
 import com.foodcourt.food_court_microservice_foodcourt.domain.usecase.RestaurantUseCase;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.SmsFeignAdapter;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.TraceabilityFeignAdapter;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.adapter.UserFeignAdapter;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.ISmsFeignClient;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.ITraceabilityFeignClient;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.client.IUserFeignClient;
+import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.feign.mapper.ITraceabilityMapper;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.adapter.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.mapper.*;
 import com.foodcourt.food_court_microservice_foodcourt.infraestructure.output.jpa.repository.*;
@@ -28,16 +29,18 @@ public class BeanConfiguration {
     private final ICategoryRepository categoryRepository;
     private final IOrderRepository orderRepository;
     private final IOrderDishRepository orderDishRepository;
-    private final IEmployeeRepository employeeRepository;
 
     private final IRestaurantEntityMapper restaurantEntityMapper;
     private final IDishEntityMapper dishEntityMapper;
     private final ICategoryEntityMapper categoryEntityMapper;
     private final IOrderEntityMapper orderEntityMapper;
     private final IOrderDishEntityMapper orderDishEntityMapper;
-    private final IEmployeeEntityMapper employeeEntityMapper;
 
     private final IUserFeignClient userFeignClient;
+    private final ISmsFeignClient smsFeignClient;
+    private final ITraceabilityFeignClient traceabilityFeignClient;
+
+    private final ITraceabilityMapper traceabilityMapper;
 
     @Bean
     public IRestaurantPersistencePort restaurantPersistencePort(){
@@ -63,11 +66,6 @@ public class BeanConfiguration {
     public IOrderDishPersistencePort orderDishPersistencePort(){
         return new OrderDishJpaAdapter(orderDishRepository,orderDishEntityMapper,orderEntityMapper);
     }
-    @Bean
-    public IEmployeePersistencePort employeePersistencePort(){
-        return new EmployeeJpaAdapter(employeeRepository,employeeEntityMapper);
-    }
-
 
     @Bean
     public IJwtServicePort jwtServicePort(){
@@ -75,15 +73,23 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public IUserExternalPort userExternalPort(){
+    public IUserServicePort userServicePort(){
         return new UserFeignAdapter(userFeignClient);
+    }
+
+    @Bean
+    public ISmsServicePort smsServicePort(){
+        return new SmsFeignAdapter(smsFeignClient);
+    }
+    @Bean
+    public ITraceabilityServicePort traceabilityServicePort(){
+        return new TraceabilityFeignAdapter(traceabilityFeignClient,traceabilityMapper);
     }
 
     @Bean
     public IRestaurantServicePort restaurantServicePort(){
         return new RestaurantUseCase(
-                restaurantPersistencePort(),
-                userExternalPort()
+                restaurantPersistencePort()
         );
     }
 
@@ -92,8 +98,7 @@ public class BeanConfiguration {
         return new DishUseCase(
                 dishPersistencePort(),
                 restaurantPersistencePort(),
-                categoryPersistencePort(),
-                jwtServicePort()
+                categoryPersistencePort()
         );
     }
 
@@ -103,20 +108,7 @@ public class BeanConfiguration {
                 orderPersistencePort(),
                 orderDishPersistencePort(),
                 dishPersistencePort(),
-                restaurantPersistencePort(),
-                employeePersistencePort(),
-                jwtServicePort()
-        );
-    }
-
-    @Bean
-    public IEmployeeServicePort employeeServicePort(){
-        return new EmployeeUseCase(
-                employeePersistencePort(),
-                restaurantPersistencePort(),
-                jwtServicePort(),
-                userExternalPort()
-
+                restaurantPersistencePort()
         );
     }
 }
